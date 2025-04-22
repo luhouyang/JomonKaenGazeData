@@ -3048,10 +3048,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isFocusRequired: 1
   keywords:
-  - keyword: Select
+  - keyword: Previous
     response:
       m_PersistentCalls:
-        m_Calls: []
+        m_Calls:
+        - m_Target: {fileID: 1362956094}
+          m_TargetAssemblyTypeName: ModelController, Assembly-CSharp
+          m_MethodName: LoadPrevious
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
   persistentKeywords: 0
   speechConfirmationTooltipPrefab: {fileID: 0}
 --- !u!1 &744798156
@@ -3355,7 +3367,7 @@ Transform:
   m_GameObject: {fileID: 747251800}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.1, z: 1.5}
+  m_LocalPosition: {x: 0, y: 0.036, z: 1.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -6554,7 +6566,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf98dd1206224111a38765365e98e207, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lockCursorWhenFocusLocked: 1
+  lockCursorWhenFocusLocked: 0
   setCursorInvisibleWhenFocusLocked: 0
   maxGazeCollisionDistance: 10
   raycastLayerMasks:
@@ -9299,10 +9311,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isFocusRequired: 1
   keywords:
-  - keyword: Select
+  - keyword: Next
     response:
       m_PersistentCalls:
-        m_Calls: []
+        m_Calls:
+        - m_Target: {fileID: 1362956094}
+          m_TargetAssemblyTypeName: ModelController, Assembly-CSharp
+          m_MethodName: LoadNext
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
   persistentKeywords: 0
   speechConfirmationTooltipPrefab: {fileID: 0}
 --- !u!1 &1954285844
