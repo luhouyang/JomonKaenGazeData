@@ -796,7 +796,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
@@ -3367,7 +3367,7 @@ Transform:
   m_GameObject: {fileID: 747251800}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.036, z: 1.5}
+  m_LocalPosition: {x: 0, y: 0.1, z: 1.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3670,7 +3670,6 @@ MonoBehaviour:
   voxelSize: 0.005
   saveKey: 96
   gaussianSigma: 0.005
-  gaussianRadius: 0.015
   viewBlocker: {fileID: 1821011974}
 --- !u!1 &828376680
 GameObject:
@@ -6479,7 +6478,7 @@ Camera:
   m_GameObject: {fileID: 1523852689}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
+  m_ClearFlags: 2
   m_BackGroundColor: {r: 0, g: 0, b: 0, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
@@ -6575,8 +6574,8 @@ MonoBehaviour:
   stabilizer:
     storedStabilitySamples: 60
   gazeTransform: {fileID: 0}
-  minHeadVelocityThreshold: 0.5
-  maxHeadVelocityThreshold: 2
+  minHeadVelocityThreshold: 0.25
+  maxHeadVelocityThreshold: 3
 --- !u!114 &1523852695
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8204,7 +8203,6 @@ MonoBehaviour:
   voxelSize: 0.005
   saveKey: 96
   gaussianSigma: 0.005
-  gaussianRadius: 0.015
   viewBlocker: {fileID: 67363898}
 --- !u!1 &1817504774
 GameObject:
@@ -8340,7 +8338,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
@@ -10261,7 +10259,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
@@ -10377,7 +10375,6 @@ MonoBehaviour:
   voxelSize: 0.005
   saveKey: 96
   gaussianSigma: 0.005
-  gaussianRadius: 0.015
   viewBlocker: {fileID: 7761376453528599282}
 --- !u!1 &8645646823609883440
 GameObject:

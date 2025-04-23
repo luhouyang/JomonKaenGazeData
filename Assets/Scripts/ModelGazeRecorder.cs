@@ -60,7 +60,7 @@ public class ModelGazeRecorder : MonoBehaviour
 
     [Header("Gaussian Settings")]
     [SerializeField] private float gaussianSigma = 0.005f;
-    [SerializeField] private float gaussianRadius = 0.015f;
+    //[SerializeField] private float gaussianRadius = 0.015f;
     private List<Vector3> uniquePositions = new List<Vector3>();
     private Dictionary<Vector3, int> positionFrequency = new Dictionary<Vector3, int>();
     private int maxFrequency;

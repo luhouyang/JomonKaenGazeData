@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class ModelController : MonoBehaviour
@@ -14,10 +15,14 @@ public class ModelController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        for (int i = 0; i < models.Count(); i++)
+        {
+            models[i].SetActive(false);
+        }
         LoadModel();
     }
 
-    // Update is called once per frame
+    // Update is called once per frame 
     void Update()
     {
         
@@ -30,8 +35,11 @@ public class ModelController : MonoBehaviour
 
     public void StopRecording()
     {
-        currentModel.GetComponent<ModelGazeRecorder>().SetIsRecording(false);
-        currentModel.GetComponent<ModelGazeRecorder>().SaveAllData();
+        if (currentModel.GetComponent<ModelGazeRecorder>().isRecording)
+        {
+            currentModel.GetComponent<ModelGazeRecorder>().SetIsRecording(false);
+            currentModel.GetComponent<ModelGazeRecorder>().SaveAllData(); 
+        }
     }
 
     private void LoadModel()
@@ -41,10 +49,13 @@ public class ModelController : MonoBehaviour
         {
             currentModel.transform.parent.SetPositionAndRotation(previousModelPosition, new Quaternion());
             StopRecording();
+            currentModel.SetActive(false);
         }
 
         // Select the next model
         currentModel = models[currentModelIndex];
+        currentModel.SetActive(true);
+        
         // Record the original transform
         previousModelPosition = currentModel.transform.parent.position;
 

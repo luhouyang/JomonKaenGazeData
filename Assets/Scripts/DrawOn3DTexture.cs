@@ -183,7 +183,7 @@ namespace Microsoft.MixedReality.Toolkit.SampleGazeData
 
         bool neverDrawnOn = true;
         Vector2 prevPos = new Vector2(-1, -1);
-        float dynamicRadius = 0;
+        //float dynamicRadius = 0;
 
         private IEnumerator DrawAt(Vector2 posUV)
         {
