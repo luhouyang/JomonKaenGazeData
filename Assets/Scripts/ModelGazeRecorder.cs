@@ -414,8 +414,8 @@ public class ModelGazeRecorder : MonoBehaviour
         string objContent = MeshToString(mesh);
         var dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
         if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-        File.WriteAllText(Path.Combine(dir, "heatmap.obj"), objContent);
-        Debug.Log("OBJ AT:" + Path.Combine(dir, "heatmap.obj").ToString());
+        File.WriteAllText(Path.Combine(dir, "model.obj"), objContent);
+        Debug.Log("OBJ AT:" + Path.Combine(dir, "model.obj").ToString());
     }
 
     private Vector3 GetAdjustedPosition(GazeData gaze)
