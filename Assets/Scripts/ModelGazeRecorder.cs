@@ -7,9 +7,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEngine;
+using System.IO.Compression;
+using System;
 
+/// <summary>
+/// Main class to record gaze, transform, and audio data during a user session.
+/// Also supports exporting session data in various formats (JSON, CSV, OBJ, WAV).
+/// </summary>
 public class ModelGazeRecorder : MonoBehaviour
 {
+    #region Serializable Data Models
+
+    /// <summary>
+    /// Stores eye and head tracking data per frame.
+    /// </summary>
     [System.Serializable]
     public class GazeData
     {
@@ -23,6 +34,9 @@ public class ModelGazeRecorder : MonoBehaviour
         public Vector3 localHitPosition;
     }
 
+    /// <summary>
+    /// Stores transform changes for tracked object over time.
+    /// </summary>
     [System.Serializable]
     public class TransformData
     {
@@ -34,6 +48,9 @@ public class ModelGazeRecorder : MonoBehaviour
         public Vector3 angularVelocity;
     }
 
+    /// <summary>
+    /// Full session data including both gaze and transform recordings.
+    /// </summary>
     [System.Serializable]
     public class SessionData
     {
@@ -41,16 +58,10 @@ public class ModelGazeRecorder : MonoBehaviour
         public List<GazeData> gazeData = new List<GazeData>();
         public List<TransformData> transformData = new List<TransformData>();
     }
-    private string selectedObjectName;
 
-    public bool isRecording;
-    public SessionData currentSession = new SessionData();
-    private Transform lastTransform;
-    private Vector3 lastPosition;
-    private Quaternion lastRotation;
+    #endregion
 
-    private DrawOn3DTexture heatmapSource;
-    public MeshFilter meshFilter;
+    #region Public Variables & Settings
 
     [Header("Voxel Settings")]
     public float voxelSize = 0.005f;
@@ -60,20 +71,56 @@ public class ModelGazeRecorder : MonoBehaviour
 
     [Header("Gaussian Settings")]
     [SerializeField] private float gaussianSigma = 0.005f;
-    //[SerializeField] private float gaussianRadius = 0.015f;
+
+    [Header("View Blocker")]
+    [SerializeField] private GameObject viewBlocker;
+
+    [Header("Audio Recording Settings")]
+    public int audioSampleRate = 44100;
+
+    [Header("Heatmap / Mesh Settings")]
+    public MeshFilter meshFilter;
+
+    #endregion
+
+    #region Private Fields
+
+    private string selectedObjectName;
+    public bool isRecording;
+    public SessionData currentSession = new SessionData();
+    private Transform lastTransform;
+    private Vector3 lastPosition;
+    private Quaternion lastRotation;
+    private DrawOn3DTexture heatmapSource;
+
     private List<Vector3> uniquePositions = new List<Vector3>();
     private Dictionary<Vector3, int> positionFrequency = new Dictionary<Vector3, int>();
     private int maxFrequency;
 
-    [Header("View BLocker")]
-    [SerializeField] private GameObject viewBlocker;
+    // Audio recording fields
+    private AudioClip recordedAudio;
+    private bool isRecordingAudio = false;
+    private string audioFilePath = string.Empty;
+    private AudioSource audioSource;
+    private float chunkStartTime = 0f;
+    private int chunkIndex = 0;
+    private List<string> savedFiles = new List<string>();
+
+    #endregion
+
+    #region Unity Lifecycle Methods
 
     private void Start()
     {
         heatmapSource = GetComponent<DrawOn3DTexture>();
+
+        // Initialize audio source
+        GameObject audioObj = new GameObject("AudioRecorder");
+        audioSource = audioObj.AddComponent<AudioSource>();
+        DontDestroyOnLoad(audioObj);
     }
 
-    void Update()
+    private void Update()
     {
         if (!isRecording) return;
 
@@ -83,32 +130,159 @@ public class ModelGazeRecorder : MonoBehaviour
         if (ModelController.currentModel != null)
         {
             RecordGazeData(gazedObject);
-            RecordTransformData(ModelController.currentModel.transform);
+            //RecordTransformData(ModelController.currentModel.transform);
             currentSession.selectedObjectName = ModelController.currentModel.name;
             selectedObjectName = currentSession.selectedObjectName;
         }
 
         if (Input.GetKeyDown(saveKey))
         {
-            // Save session
-            SaveSession("session.json");
-            ExportToCSV("gaze_data.csv", "transform_data.csv");
-            ExportAllFormats(ModelController.currentModel);
+            SaveAllData();
+        }
+
+        // Auto-save chunks every ~60 seconds
+        if (isRecordingAudio && Time.time - chunkStartTime >= 59f)
+        {
+            string dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            StopAudioRecording(); // Save current chunk
+            StartCoroutine(RestartAudioRecordingAfterDelay());
         }
     }
 
+    #endregion
+
+    #region Control Methods
+
+    /// <summary>
+    /// Sets the recording state on or off.
+    /// Enables/disables audio recording accordingly.
+    /// </summary>
     public void SetIsRecording(bool val)
     {
         isRecording = val;
         viewBlocker.SetActive(!val);
+
+        if (val && !isRecordingAudio)
+        {
+            chunkIndex = 0; // Reset chunk index
+            savedFiles.Clear(); // Clear file list
+            StartAudioRecording();
+        }
+        else if (!val && isRecordingAudio)
+        {
+            string dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            StopAudioRecording();
+            SaveFileList(dir); // Save file list
+        }
     }
 
-    public void SaveAllData()
+    #endregion
+
+    #region Audio Recording Methods
+
+    private IEnumerator RestartAudioRecordingAfterDelay()
     {
-        SaveSession("session.json");
-        ExportToCSV("gaze_data.csv", "transform_data.csv");
-        ExportAllFormats(ModelController.currentModel);
+        yield return new WaitForSeconds(0.1f); // Small delay
+        StartAudioRecording();
     }
+
+    private void StartAudioRecording()
+    {
+        recordedAudio = Microphone.Start(null, false, 60, audioSampleRate); // loop = false
+        isRecordingAudio = true;
+        chunkStartTime = Time.time;
+        Debug.Log("Started audio recording (60s chunk).");
+    }
+
+    private void StopAudioRecording()
+    {
+        if (!isRecordingAudio) return;
+        Microphone.End(null);
+        SaveAudioData(Path.Combine(Application.persistentDataPath, selectedObjectName));
+        isRecordingAudio = false;
+        Debug.Log("Stopped audio recording and saved final chunk.");
+    }
+
+    private byte[] ConvertAudioClipToWAV(AudioClip clip)
+    {
+        if (clip == null || clip.samples == 0)
+            return null;
+
+        int channels = clip.channels;
+        int sampleCount = clip.samples;
+        int bitsPerSample = 16;
+        int byteRate = clip.frequency * channels * (bitsPerSample / 8);
+        int dataSize = sampleCount * channels * (bitsPerSample / 8);
+
+        // Create WAV header
+        byte[] header = new byte[44];
+        Buffer.BlockCopy(Encoding.UTF8.GetBytes("RIFF"), 0, header, 0, 4);
+        BitConverter.GetBytes((int)(dataSize + 36)).CopyTo(header, 4);
+        Buffer.BlockCopy(Encoding.UTF8.GetBytes("WAVE"), 0, header, 8, 4);
+        Buffer.BlockCopy(Encoding.UTF8.GetBytes("fmt "), 0, header, 12, 4);
+        BitConverter.GetBytes((int)16).CopyTo(header, 16);
+        BitConverter.GetBytes((short)1).CopyTo(header, 20);
+        BitConverter.GetBytes((short)channels).CopyTo(header, 22);
+        BitConverter.GetBytes(clip.frequency).CopyTo(header, 24);
+        BitConverter.GetBytes(byteRate).CopyTo(header, 28);
+        BitConverter.GetBytes((short)(channels * (bitsPerSample / 8))).CopyTo(header, 32);
+        BitConverter.GetBytes((short)bitsPerSample).CopyTo(header, 34);
+        Buffer.BlockCopy(Encoding.UTF8.GetBytes("data"), 0, header, 36, 4);
+        BitConverter.GetBytes((int)dataSize).CopyTo(header, 40);
+
+        // Extract samples and convert to short PCM
+        float[] samples = new float[sampleCount * channels];
+        clip.GetData(samples, 0);
+        byte[] data = new byte[dataSize];
+
+        for (int i = 0; i < samples.Length; i++)
+        {
+            short val = (short)Mathf.Clamp(samples[i] * short.MaxValue, short.MinValue, short.MaxValue);
+            Buffer.BlockCopy(BitConverter.GetBytes(val), 0, data, i * 2, 2);
+        }
+
+        byte[] wavBytes = new byte[header.Length + data.Length];
+        Buffer.BlockCopy(header, 0, wavBytes, 0, header.Length);
+        Buffer.BlockCopy(data, 0, wavBytes, header.Length, data.Length);
+        return wavBytes;
+    }
+
+    private void SaveAudioData(string folderPath)
+    {
+        if (recordedAudio == null)
+        {
+            Debug.LogWarning("No audio recorded to save.");
+            return;
+        }
+
+        byte[] wavData = ConvertAudioClipToWAV(recordedAudio);
+        string audioFileName = $"session_audio_{chunkIndex}.wav";
+        string fullPath = Path.Combine(folderPath, audioFileName);
+        File.WriteAllBytes(fullPath, wavData);
+        Debug.Log($"Audio chunk saved: {fullPath}");
+        savedFiles.Add(audioFileName);
+        chunkIndex++;
+    }
+
+    private void SaveFileList(string folderPath)
+    {
+        // IN CMD run: ffmpeg -f concat -safe 0 -i filelist.txt -c copy output.wav
+        StringBuilder sb = new StringBuilder();
+        foreach (string file in savedFiles)
+        {
+            sb.AppendLine("file '" + file + "'");
+        }
+
+        string listFilePath = Path.Combine(folderPath, "filelist.txt");
+        File.WriteAllText(listFilePath, sb.ToString());
+        Debug.Log("File list saved to: " + listFilePath);
+    }
+
+    #endregion
+
+    #region Gaze & Transform Recording
 
     private void RecordGazeData(GameObject target)
     {
@@ -128,7 +302,6 @@ public class ModelGazeRecorder : MonoBehaviour
 
         if (target != null && target.name == currentSession.selectedObjectName)
         {
-            // Convert to local space
             gaze.localHitPosition = target.transform.InverseTransformPoint(gaze.hitPosition);
         }
         else
@@ -143,20 +316,16 @@ public class ModelGazeRecorder : MonoBehaviour
     {
         if (targetTransform == null) return;
 
-        // Calculate velocity
         Vector3 currentPosition = targetTransform.position;
         Vector3 velocity = (currentPosition - lastPosition) / Time.deltaTime;
 
-        // Calculate angular velocity using Euler angles with proper wrapping
         Vector3 currentEuler = targetTransform.rotation.eulerAngles;
         Vector3 lastEuler = lastRotation.eulerAngles;
-
         Vector3 deltaEuler = new Vector3(
             Mathf.DeltaAngle(lastEuler.x, currentEuler.x),
             Mathf.DeltaAngle(lastEuler.y, currentEuler.y),
             Mathf.DeltaAngle(lastEuler.z, currentEuler.z)
         );
-
         Vector3 angularVelocity = deltaEuler / Time.deltaTime;
 
         var transformData = new TransformData
@@ -170,23 +339,29 @@ public class ModelGazeRecorder : MonoBehaviour
         };
 
         currentSession.transformData.Add(transformData);
-
         lastPosition = currentPosition;
         lastRotation = targetTransform.rotation;
+    }
+
+    #endregion
+
+    #region Session Saving & Exporting
+
+    public void SaveAllData()
+    {
+        SaveSession("session.json");
+        ExportToCSV("gaze_data.csv", "transform_data.csv");
+        ExportAllFormats(ModelController.currentModel);
     }
 
     public void SaveSession(string fileName)
     {
         string json = JsonUtility.ToJson(currentSession);
-
         var dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
-        if (!Directory.Exists(dir))
-        {
-            Directory.CreateDirectory(dir);
-        }
-
-        File.WriteAllText(Path.Combine(dir, fileName), json);
-        Debug.Log("JSON AT:" + Path.Combine(dir, fileName).ToString());
+        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+        string fullPath = Path.Combine(dir, fileName);
+        File.WriteAllText(fullPath, json);
+        Debug.Log("JSON AT:" + fullPath);
     }
 
     public void ExportToCSV(string gazeFileName, string transformFileName)
@@ -194,9 +369,7 @@ public class ModelGazeRecorder : MonoBehaviour
         StringBuilder gaze_csv = new StringBuilder();
         StringBuilder transform_csv = new StringBuilder();
 
-        // Gaze Data Header
         gaze_csv.AppendLine("Timestamp,HeadX,HeadY,HeadZ,HeadFwdX,HeadFwdY,HeadFwdZ,EyeOriginX,EyeOriginY,EyeOriginZ,EyeDirX,EyeDirY,EyeDirZ,HitX,HitY,HitZ,TargetName");
-
         foreach (var gaze in currentSession.gazeData)
         {
             gaze_csv.AppendLine($"{gaze.timestamp:F6}," +
@@ -208,74 +381,45 @@ public class ModelGazeRecorder : MonoBehaviour
                            $"{gaze.targetName}");
         }
 
-        // Transform Data Header
-        transform_csv.AppendLine("\nTransformTimestamp,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,ScaleX,ScaleY,ScaleZ,VelX,VelY,VelZ,AngVelX,AngVelY,AngVelZ");
-
-        foreach (var trans in currentSession.transformData)
-        {
-            transform_csv.AppendLine($"{trans.timestamp:F6}," +
-                            $"{trans.position.x:F4},{trans.position.y:F4},{trans.position.z:F4}," +
-                            $"{trans.rotation.x:F4},{trans.rotation.y:F4},{trans.rotation.z:F4},{trans.rotation.w:F4}," +
-                            $"{trans.scale.x:F4},{trans.scale.y:F4},{trans.scale.z:F4}," +
-                            $"{trans.velocity.x:F4},{trans.velocity.y:F4},{trans.velocity.z:F4}," +
-                            $"{trans.angularVelocity.x:F4},{trans.angularVelocity.y:F4},{trans.angularVelocity.z:F4}");
-        }
+        //transform_csv.AppendLine("TransformTimestamp,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,ScaleX,ScaleY,ScaleZ,VelX,VelY,VelZ,AngVelX,AngVelY,AngVelZ");
+        //foreach (var trans in currentSession.transformData)
+        //{
+        //    transform_csv.AppendLine($"{trans.timestamp:F6}," +
+        //                    $"{trans.position.x:F4},{trans.position.y:F4},{trans.position.z:F4}," +
+        //                    $"{trans.rotation.x:F4},{trans.rotation.y:F4},{trans.rotation.z:F4},{trans.rotation.w:F4}," +
+        //                    $"{trans.scale.x:F4},{trans.scale.y:F4},{trans.scale.z:F4}," +
+        //                    $"{trans.velocity.x:F4},{trans.velocity.y:F4},{trans.velocity.z:F4}," +
+        //                    $"{trans.angularVelocity.x:F4},{trans.angularVelocity.y:F4},{trans.angularVelocity.z:F4}");
+        //}
 
         var dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
-        if (!Directory.Exists(dir))
-        {
-            Directory.CreateDirectory(dir);
-        }
+        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
         File.WriteAllText(Path.Combine(dir, gazeFileName), gaze_csv.ToString());
         Debug.Log("GAZE CSV AT:" + Path.Combine(dir, gazeFileName).ToString());
 
-        File.WriteAllText(Path.Combine(dir, transformFileName), transform_csv.ToString());
-        Debug.Log("TRANSFORM CSV AT:" + Path.Combine(dir, transformFileName).ToString());
+        //File.WriteAllText(Path.Combine(dir, transformFileName), transform_csv.ToString());
+        //Debug.Log("TRANSFORM CSV AT:" + Path.Combine(dir, transformFileName).ToString());
     }
-
 
     public void ExportAllFormats(GameObject target)
     {
-        //ExportHeatmapTexture();
         Export3DModel();
         ExportPointCloud(target);
-        //ExportVoxelGrid();
-    }
-
-    private void ExportHeatmapTexture()
-    {
-        Texture2D heatmap = heatmapSource.MyDrawTexture;
-        byte[] pngData = heatmap.EncodeToPNG();
-
-        var dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
-        if (!Directory.Exists(dir))
-        {
-            Directory.CreateDirectory(dir);
-        }
-
-        File.WriteAllBytes(Path.Combine(dir, "heatmap.png"), pngData);
-        Debug.Log("PNG AT:" + Path.Combine(dir, "heatmap.png").ToString());
     }
 
     private void Export3DModel()
     {
         Mesh mesh = meshFilter.sharedMesh;
         string objContent = MeshToString(mesh);
-
         var dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
-        if (!Directory.Exists(dir))
-        {
-            Directory.CreateDirectory(dir);
-        }
-
+        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, "heatmap.obj"), objContent);
         Debug.Log("OBJ AT:" + Path.Combine(dir, "heatmap.obj").ToString());
     }
 
     private Vector3 GetAdjustedPosition(GazeData gaze)
     {
-        // Use local position if available and valid
         if (gaze.targetName == currentSession.selectedObjectName &&
             gaze.localHitPosition != Vector3.zero)
         {
@@ -290,30 +434,25 @@ public class ModelGazeRecorder : MonoBehaviour
         uniquePositions.Clear();
         maxFrequency = 0;
 
-        // Get the local bounds of the target GameObject
         Renderer targetRenderer = target.GetComponent<Renderer>();
         if (targetRenderer == null)
         {
             Debug.LogError("Target GameObject does not have a Renderer component.");
             return;
         }
-        Bounds localBounds = targetRenderer.localBounds; // Local bounds of the target
+        Bounds localBounds = targetRenderer.localBounds;
 
-        // First pass: build frequency dictionary and unique positions list
         foreach (var gaze in currentSession.gazeData)
         {
             if (gaze.hitPosition == Vector3.zero) continue;
-
             Vector3 pos = GetAdjustedPosition(gaze);
 
-            // If the position is in world space, convert it to local space
             if (gaze.targetName != currentSession.selectedObjectName ||
                 gaze.localHitPosition == Vector3.zero)
             {
-                pos = target.transform.InverseTransformPoint(pos); // Convert world to local space
+                pos = target.transform.InverseTransformPoint(pos);
             }
 
-            // Check if the gaze hit is within the local bounds of the target
             if (localBounds.Contains(pos) && gaze.targetName == target.name && gaze.targetName != "null")
             {
                 if (positionFrequency.ContainsKey(pos))
@@ -325,7 +464,6 @@ public class ModelGazeRecorder : MonoBehaviour
                     positionFrequency[pos] = 1;
                     uniquePositions.Add(pos);
                 }
-
                 if (positionFrequency[pos] > maxFrequency)
                 {
                     maxFrequency = positionFrequency[pos];
@@ -333,132 +471,22 @@ public class ModelGazeRecorder : MonoBehaviour
             }
         }
 
-        // Second pass: write data with Gaussian-smoothed intensity
         StringBuilder sb = new StringBuilder();
         sb.AppendLine("x,y,z,intensity");
-
         foreach (var pos in uniquePositions)
         {
             float intensity = CalculateHeatmapIntensity(pos);
-
             sb.AppendLine($"{pos.x:F4},{pos.y:F4},{pos.z:F4},{intensity:F4}");
         }
 
         var dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
-        if (!Directory.Exists(dir))
-        {
-            Directory.CreateDirectory(dir);
-        }
-
+        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, "pointcloud.csv"), sb.ToString());
         Debug.Log("POINTCLOUD AT:" + Path.Combine(dir, "pointcloud.csv").ToString());
     }
 
-    private class VoxelData
-    {
-        public Vector3 position;
-        public float intensitySum;
-        public int pointCount;
-    }
-
-    private void ExportVoxelGrid()
-    {
-        // Scale factor to preserve precision
-        const float scaleFactor = 100f; // Adjust based on your scene scale
-        float scaledVoxelSize = voxelSize * scaleFactor;
-
-        Dictionary<Vector3Int, VoxelData> voxels = new Dictionary<Vector3Int, VoxelData>();
-        float maxVoxelIntensity = 0;
-
-        // First pass: collect all voxel data
-        foreach (var gaze in currentSession.gazeData)
-        {
-            if (gaze.hitPosition == Vector3.zero) continue;
-
-            Vector3 pos = GetAdjustedPosition(gaze);
-            float intensity = CalculateHeatmapIntensity(pos);
-
-            // Scale up positions before voxelization
-            Vector3 scaledPos = pos * scaleFactor;
-
-            // Calculate voxel indices using floor
-            Vector3Int voxelIndex = new Vector3Int(
-                Mathf.FloorToInt(scaledPos.x / scaledVoxelSize),
-                Mathf.FloorToInt(scaledPos.y / scaledVoxelSize),
-                Mathf.FloorToInt(scaledPos.z / scaledVoxelSize)
-            );
-
-            // Calculate voxel center in scaled space
-            Vector3 voxelCenter = new Vector3(
-                (voxelIndex.x + 0.5f) * scaledVoxelSize,
-                (voxelIndex.y + 0.5f) * scaledVoxelSize,
-                (voxelIndex.z + 0.5f) * scaledVoxelSize
-            );
-
-            if (!voxels.ContainsKey(voxelIndex))
-            {
-                voxels[voxelIndex] = new VoxelData
-                {
-                    position = voxelCenter / scaleFactor, // Store in original space
-                    intensitySum = 0,
-                    pointCount = 0
-                };
-            }
-
-            // Apply Gaussian weighting based on distance from voxel center
-            float distance = Vector3.Distance(scaledPos, voxelCenter);
-            float weight = Mathf.Exp(-(distance * distance) / (2 * gaussianSigma * gaussianSigma));
-
-            voxels[voxelIndex].intensitySum += intensity * weight;
-            voxels[voxelIndex].pointCount++;
-
-            if (voxels[voxelIndex].intensitySum > maxVoxelIntensity)
-                maxVoxelIntensity = voxels[voxelIndex].intensitySum;
-        }
-
-        // Second pass: normalize and write data
-        StringBuilder sb = new StringBuilder();
-        sb.AppendLine("x,y,z,intensity");
-
-        foreach (var kvp in voxels)
-        {
-            float normalizedIntensity = maxVoxelIntensity > 0 ?
-                kvp.Value.intensitySum / maxVoxelIntensity : 0;
-
-            sb.AppendLine($"{kvp.Value.position.x:F4}," +
-                          $"{kvp.Value.position.y:F4}," +
-                          $"{kvp.Value.position.z:F4}," +
-                          $"{normalizedIntensity:F4}");
-        }
-
-        var dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
-        if (!Directory.Exists(dir))
-        {
-            Directory.CreateDirectory(dir);
-        }
-
-        File.WriteAllText(Path.Combine(dir, "voxelgrid.csv"), sb.ToString());
-    }
-
     private float CalculateHeatmapIntensity(Vector3 position)
     {
-        //float intensity = 0f;
-
-        //foreach (var uniquePos in uniquePositions)
-        //{
-        //    float distance = Vector3.Distance(position, uniquePos);
-
-        //    if (distance <= gaussianRadius)
-        //    {
-        //        float weight = Mathf.Exp(-(distance * distance) / (2 * gaussianSigma * gaussianSigma));
-        //        intensity += weight * positionFrequency[uniquePos];
-        //    }
-        //}
-
-        //float maxPossibleIntensity = positionFrequency.Count > 0 ?
-        //    positionFrequency.Values.Max() : 0;
-
-        //return maxPossibleIntensity > 0 ? intensity / maxPossibleIntensity : 0;
         return positionFrequency.ContainsKey(position) ?
             (float)positionFrequency[position] / maxFrequency : 0f;
     }
@@ -496,4 +524,6 @@ public class ModelGazeRecorder : MonoBehaviour
 
         return sb.ToString();
     }
+
+    #endregion
 }
