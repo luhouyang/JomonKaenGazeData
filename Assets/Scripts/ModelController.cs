@@ -1,24 +1,43 @@
+using Microsoft.MixedReality.Toolkit.Input;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 public class ModelController : MonoBehaviour
 {
     [SerializeField]
-    private List<GameObject> models = new List<GameObject>();
+    private List<GameObject> groups = new List<GameObject>();
 
+    private List<GameObject> models = new List<GameObject>();
     private int currentModelIndex = 0;
     private Vector3 previousModelPosition = Vector3.zero;
     public static GameObject currentModel;
 
+    private string sessionPath;
+    private GameObject group;
+
     // Start is called before the first frame update
     void Start()
     {
-        for (int i = 0; i < models.Count(); i++)
-        {
-            models[i].SetActive(false);
+        sessionPath = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+
+        // deactivate all models to reduce overhead
+        for (int i = 0; i < groups.Count; i++) {
+            models = groups[i].GetComponent<GroupItems>().GetModels();
+            for (int j = 0; j < models.Count(); j++)
+            {
+                models[j].GetComponent<ModelGazeRecorder>().sessionPath = sessionPath;
+                models[j].GetComponent<EyeTrackingTarget>().enabled = false;
+                models[j].SetActive(false);
+            }
         }
+       
+        group = groups[0];
+        models = group.GetComponent<GroupItems>().GetModels();
+
         LoadModel();
     }
 
@@ -26,6 +45,23 @@ public class ModelController : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public void SelectGroup(int groupNumber)
+    {
+        group = groups[groupNumber];
+        models = group.GetComponent<GroupItems>().GetModels();
+
+        sessionPath = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+        for (int j = 0; j < models.Count(); j++)
+        {
+            ModelGazeRecorder recorder = models[j].GetComponent<ModelGazeRecorder>();
+            recorder.sessionPath = sessionPath;
+            recorder.ResetAll();
+        }
+
+        currentModelIndex = 0;
+        LoadModel();
     }
 
     public void StartRecording()

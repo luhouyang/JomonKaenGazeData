@@ -11,10 +11,10 @@ namespace Microsoft.MixedReality.Toolkit.SampleGazeData
         public Texture2D HeatmapLookUpTable;
 
         [SerializeField]
-        private float drawBrushSize = 2000.0f; // aka spread
+        private float drawBrushSize = 1000.0f; // aka spread
 
         [SerializeField]
-        private float drawIntensity = 15.0f; // aka amplitude
+        private float drawIntensity = 30.0f; // aka amplitude
 
         [SerializeField]
         private float minThreshDeltaHeatMap = 0.001f; // Mostly for performance to reduce spreading heatmap for small values.
