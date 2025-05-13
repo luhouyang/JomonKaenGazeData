@@ -95,6 +95,7 @@ public class ModelGazeRecorder : MonoBehaviour
     private DrawOn3DTexture heatmapSource;
 
     public string sessionPath;
+    private string dir;
 
     private List<Vector3> uniquePositions = new List<Vector3>();
     private Dictionary<Vector3, int> positionFrequency = new Dictionary<Vector3, int>();
@@ -136,6 +137,8 @@ public class ModelGazeRecorder : MonoBehaviour
             //RecordTransformData(ModelController.currentModel.transform);
             currentSession.selectedObjectName = ModelController.currentModel.name;
             selectedObjectName = currentSession.selectedObjectName;
+            dir = Path.Combine(Application.persistentDataPath, sessionPath, selectedObjectName);
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
         }
 
         if (Input.GetKeyDown(saveKey))
@@ -146,9 +149,6 @@ public class ModelGazeRecorder : MonoBehaviour
         // Auto-save chunks every ~60 seconds
         if (isRecordingAudio && Time.time - chunkStartTime >= 59f)
         {
-            string dir = Path.Combine(Application.persistentDataPath, sessionPath, selectedObjectName);
-            //string dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
-            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
             StopAudioRecording(); // Save current chunk
             StartCoroutine(RestartAudioRecordingAfterDelay());
         }
@@ -175,9 +175,6 @@ public class ModelGazeRecorder : MonoBehaviour
         }
         else if (!val && isRecordingAudio)
         {
-            string dir = Path.Combine(Application.persistentDataPath, sessionPath, selectedObjectName);
-            //string dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
-            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
             StopAudioRecording();
             SaveFileList(dir); // Save file list
         }
@@ -205,7 +202,7 @@ public class ModelGazeRecorder : MonoBehaviour
     {
         if (!isRecordingAudio) return;
         Microphone.End(null);
-        SaveAudioData(Path.Combine(Application.persistentDataPath, sessionPath, selectedObjectName));
+        SaveAudioData(dir);
         isRecordingAudio = false;
         Debug.Log("Stopped audio recording and saved final chunk.");
     }
@@ -373,10 +370,9 @@ public class ModelGazeRecorder : MonoBehaviour
             Microphone.End(null);
         }
 
-        // If you have a visual representation of the heatmap, reset it here
         if (heatmapSource != null)
         {
-            //heatmapSource.InitializeDrawTexture(); // Assuming you have a method to clear the heatmap
+            heatmapSource.ClearDrawing();
         }
     }
 
@@ -390,9 +386,6 @@ public class ModelGazeRecorder : MonoBehaviour
     public void SaveSession(string fileName)
     {
         string json = JsonUtility.ToJson(currentSession);
-        string dir = Path.Combine(Application.persistentDataPath, sessionPath, selectedObjectName);
-        //string dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
-        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
         string fullPath = Path.Combine(dir, fileName);
         File.WriteAllText(fullPath, json);
         Debug.Log("JSON AT:" + fullPath);
@@ -426,10 +419,6 @@ public class ModelGazeRecorder : MonoBehaviour
         //                    $"{trans.angularVelocity.x:F4},{trans.angularVelocity.y:F4},{trans.angularVelocity.z:F4}");
         //}
 
-        string dir = Path.Combine(Application.persistentDataPath, sessionPath, selectedObjectName);
-        //string dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
-        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-
         File.WriteAllText(Path.Combine(dir, gazeFileName), gaze_csv.ToString());
         Debug.Log("GAZE CSV AT:" + Path.Combine(dir, gazeFileName).ToString());
 
@@ -447,9 +436,6 @@ public class ModelGazeRecorder : MonoBehaviour
     {
         Mesh mesh = meshFilter.sharedMesh;
         string objContent = MeshToString(mesh);
-        string dir = Path.Combine(Application.persistentDataPath, sessionPath, selectedObjectName);
-        //string dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
-        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, "model.obj"), objContent);
         Debug.Log("OBJ AT:" + Path.Combine(dir, "model.obj").ToString());
     }
@@ -478,6 +464,10 @@ public class ModelGazeRecorder : MonoBehaviour
         }
         Bounds localBounds = targetRenderer.localBounds;
 
+        //List<Vector3> positions = new List<Vector3>();
+        //StringBuilder sb = new StringBuilder();
+        //sb.AppendLine("x,y,z,intensity");
+
         foreach (var gaze in currentSession.gazeData)
         {
             if (gaze.hitPosition == Vector3.zero) continue;
@@ -504,6 +494,9 @@ public class ModelGazeRecorder : MonoBehaviour
                 {
                     maxFrequency = positionFrequency[pos];
                 }
+                //positions.Add(pos);
+                //float intensity = 1.0f;
+                //sb.AppendLine($"{pos.x:F4},{pos.y:F4},{pos.z:F4},{intensity:F4},{gaze.timestamp}");
             }
         }
 
@@ -515,9 +508,6 @@ public class ModelGazeRecorder : MonoBehaviour
             sb.AppendLine($"{pos.x:F4},{pos.y:F4},{pos.z:F4},{intensity:F4}");
         }
 
-        string dir = Path.Combine(Application.persistentDataPath, sessionPath, selectedObjectName);
-        //string dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
-        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, "pointcloud.csv"), sb.ToString());
         Debug.Log("POINTCLOUD AT:" + Path.Combine(dir, "pointcloud.csv").ToString());
     }

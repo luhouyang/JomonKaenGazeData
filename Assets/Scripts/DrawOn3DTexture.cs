@@ -168,6 +168,7 @@ namespace Microsoft.MixedReality.Toolkit.SampleGazeData
         {
             if (myDrawTex != null)
             {
+                //Debug.Log("Clearing");
                 Color clearColor = new Color(0, 0, 0, 0);
                 for (int x = 0; x < myDrawTex.width; x++)
                 {
