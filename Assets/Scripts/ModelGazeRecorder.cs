@@ -165,7 +165,6 @@ public class ModelGazeRecorder : MonoBehaviour
     {
         isRecording = val;
         viewBlocker.SetActive(!val);
-        gameObject.GetComponent<EyeTrackingTarget>().enabled = val;
 
         if (val && !isRecordingAudio)
         {
@@ -180,6 +179,8 @@ public class ModelGazeRecorder : MonoBehaviour
             StopAudioRecording();
             SaveFileList(dir); // Save file list
         }
+
+        gameObject.GetComponent<EyeTrackingTarget>().enabled = val;
     }
 
     #endregion
