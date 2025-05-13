@@ -147,6 +147,7 @@ public class ModelGazeRecorder : MonoBehaviour
         if (isRecordingAudio && Time.time - chunkStartTime >= 59f)
         {
             string dir = Path.Combine(Application.persistentDataPath, sessionPath, selectedObjectName);
+            //string dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
             StopAudioRecording(); // Save current chunk
             StartCoroutine(RestartAudioRecordingAfterDelay());
@@ -175,12 +176,11 @@ public class ModelGazeRecorder : MonoBehaviour
         else if (!val && isRecordingAudio)
         {
             string dir = Path.Combine(Application.persistentDataPath, sessionPath, selectedObjectName);
+            //string dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
             StopAudioRecording();
             SaveFileList(dir); // Save file list
         }
-
-        gameObject.GetComponent<EyeTrackingTarget>().enabled = val;
     }
 
     #endregion
@@ -205,7 +205,7 @@ public class ModelGazeRecorder : MonoBehaviour
     {
         if (!isRecordingAudio) return;
         Microphone.End(null);
-        SaveAudioData(Path.Combine(Application.persistentDataPath, selectedObjectName));
+        SaveAudioData(Path.Combine(Application.persistentDataPath, sessionPath, selectedObjectName));
         isRecordingAudio = false;
         Debug.Log("Stopped audio recording and saved final chunk.");
     }
@@ -390,7 +390,8 @@ public class ModelGazeRecorder : MonoBehaviour
     public void SaveSession(string fileName)
     {
         string json = JsonUtility.ToJson(currentSession);
-        var dir = Path.Combine(Application.persistentDataPath, sessionPath, selectedObjectName);
+        string dir = Path.Combine(Application.persistentDataPath, sessionPath, selectedObjectName);
+        //string dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
         if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
         string fullPath = Path.Combine(dir, fileName);
         File.WriteAllText(fullPath, json);
@@ -425,7 +426,8 @@ public class ModelGazeRecorder : MonoBehaviour
         //                    $"{trans.angularVelocity.x:F4},{trans.angularVelocity.y:F4},{trans.angularVelocity.z:F4}");
         //}
 
-        var dir = Path.Combine(Application.persistentDataPath, sessionPath, selectedObjectName);
+        string dir = Path.Combine(Application.persistentDataPath, sessionPath, selectedObjectName);
+        //string dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
         if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
         File.WriteAllText(Path.Combine(dir, gazeFileName), gaze_csv.ToString());
@@ -445,7 +447,8 @@ public class ModelGazeRecorder : MonoBehaviour
     {
         Mesh mesh = meshFilter.sharedMesh;
         string objContent = MeshToString(mesh);
-        var dir = Path.Combine(Application.persistentDataPath, sessionPath, selectedObjectName);
+        string dir = Path.Combine(Application.persistentDataPath, sessionPath, selectedObjectName);
+        //string dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
         if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, "model.obj"), objContent);
         Debug.Log("OBJ AT:" + Path.Combine(dir, "model.obj").ToString());
@@ -512,7 +515,8 @@ public class ModelGazeRecorder : MonoBehaviour
             sb.AppendLine($"{pos.x:F4},{pos.y:F4},{pos.z:F4},{intensity:F4}");
         }
 
-        var dir = Path.Combine(Application.persistentDataPath, sessionPath, selectedObjectName);
+        string dir = Path.Combine(Application.persistentDataPath, sessionPath, selectedObjectName);
+        //string dir = Path.Combine(Application.persistentDataPath, selectedObjectName);
         if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, "pointcloud.csv"), sb.ToString());
         Debug.Log("POINTCLOUD AT:" + Path.Combine(dir, "pointcloud.csv").ToString());

@@ -22,7 +22,7 @@ public class ModelController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        sessionPath = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+        sessionPath = DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss");
 
         // deactivate all models to reduce overhead
         for (int i = 0; i < groups.Count; i++) {
@@ -67,6 +67,7 @@ public class ModelController : MonoBehaviour
     public void StartRecording()
     {
         currentModel.GetComponent<ModelGazeRecorder>().SetIsRecording(true);
+        currentModel.GetComponent<EyeTrackingTarget>().enabled = true;
     }
 
     public void StopRecording()
@@ -74,7 +75,8 @@ public class ModelController : MonoBehaviour
         if (currentModel.GetComponent<ModelGazeRecorder>().isRecording)
         {
             currentModel.GetComponent<ModelGazeRecorder>().SetIsRecording(false);
-            currentModel.GetComponent<ModelGazeRecorder>().SaveAllData(); 
+            currentModel.GetComponent<ModelGazeRecorder>().SaveAllData();
+            currentModel.GetComponent<EyeTrackingTarget>().enabled = false;
         }
     }
 
