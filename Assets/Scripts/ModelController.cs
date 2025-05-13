@@ -52,7 +52,7 @@ public class ModelController : MonoBehaviour
         group = groups[groupNumber];
         models = group.GetComponent<GroupItems>().GetModels();
 
-        sessionPath = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+        sessionPath = DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss");
         for (int j = 0; j < models.Count(); j++)
         {
             ModelGazeRecorder recorder = models[j].GetComponent<ModelGazeRecorder>();
