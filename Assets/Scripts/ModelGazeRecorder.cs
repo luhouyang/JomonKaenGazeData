@@ -10,6 +10,7 @@ using UnityEngine;
 using System.IO.Compression;
 using System;
 using UnityEngine.Profiling;
+using TMPro;
 
 /// <summary>
 /// Main class to record gaze, transform, and audio data during a user session.
@@ -464,49 +465,48 @@ public class ModelGazeRecorder : MonoBehaviour
         }
         Bounds localBounds = targetRenderer.localBounds;
 
-        //List<Vector3> positions = new List<Vector3>();
-        //StringBuilder sb = new StringBuilder();
-        //sb.AppendLine("x,y,z,intensity");
+        List<Vector3> positions = new List<Vector3>();
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("x,y,z,timestamp");
 
         foreach (var gaze in currentSession.gazeData)
         {
             if (gaze.hitPosition == Vector3.zero) continue;
             Vector3 pos = GetAdjustedPosition(gaze);
 
-            if (gaze.targetName != currentSession.selectedObjectName ||
-                gaze.localHitPosition == Vector3.zero)
-            {
-                pos = target.transform.InverseTransformPoint(pos);
-            }
+            //if (gaze.targetName != currentSession.selectedObjectName ||
+            //    gaze.localHitPosition == Vector3.zero)
+            //{
+            //    pos = target.transform.InverseTransformPoint(pos);
+            //}
 
             if (localBounds.Contains(pos) && gaze.targetName == target.name && gaze.targetName != "null")
             {
-                if (positionFrequency.ContainsKey(pos))
-                {
-                    positionFrequency[pos]++;
-                }
-                else
-                {
-                    positionFrequency[pos] = 1;
-                    uniquePositions.Add(pos);
-                }
-                if (positionFrequency[pos] > maxFrequency)
-                {
-                    maxFrequency = positionFrequency[pos];
-                }
-                //positions.Add(pos);
-                //float intensity = 1.0f;
-                //sb.AppendLine($"{pos.x:F4},{pos.y:F4},{pos.z:F4},{intensity:F4},{gaze.timestamp}");
+                //if (positionFrequency.ContainsKey(pos))
+                //{
+                //    positionFrequency[pos]++;
+                //}
+                //else
+                //{
+                //    positionFrequency[pos] = 1;
+                //    uniquePositions.Add(pos);
+                //}
+                //if (positionFrequency[pos] > maxFrequency)
+                //{
+                //    maxFrequency = positionFrequency[pos];
+                //}
+                positions.Add(pos);
+                sb.AppendLine($"{pos.x:F4},{pos.y:F4},{pos.z:F4},{gaze.timestamp}");
             }
         }
 
-        StringBuilder sb = new StringBuilder();
-        sb.AppendLine("x,y,z,intensity");
-        foreach (var pos in uniquePositions)
-        {
-            float intensity = CalculateHeatmapIntensity(pos);
-            sb.AppendLine($"{pos.x:F4},{pos.y:F4},{pos.z:F4},{intensity:F4}");
-        }
+        //StringBuilder sb = new StringBuilder();
+        //sb.AppendLine("x,y,z,intensity");
+        //foreach (var pos in uniquePositions)
+        //{
+        //    float intensity = CalculateHeatmapIntensity(pos);
+        //    sb.AppendLine($"{pos.x:F4},{pos.y:F4},{pos.z:F4},{intensity:F4}");
+        //}
 
         File.WriteAllText(Path.Combine(dir, "pointcloud.csv"), sb.ToString());
         Debug.Log("POINTCLOUD AT:" + Path.Combine(dir, "pointcloud.csv").ToString());

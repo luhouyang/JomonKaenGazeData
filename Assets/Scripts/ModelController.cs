@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -10,6 +11,9 @@ public class ModelController : MonoBehaviour
 {
     [SerializeField]
     private List<GameObject> groups = new List<GameObject>();
+
+    [SerializeField]
+    private GameObject promptObject;
 
     private List<GameObject> models = new List<GameObject>();
     private int currentModelIndex = 0;
@@ -66,17 +70,29 @@ public class ModelController : MonoBehaviour
 
     public void StartRecording()
     {
+        promptObject.SetActive(false);
         currentModel.GetComponent<ModelGazeRecorder>().SetIsRecording(true);
         currentModel.GetComponent<EyeTrackingTarget>().enabled = true;
     }
 
     public void StopRecording()
     {
+        promptObject.SetActive(true);
+        foreach (TextMeshPro tmp in promptObject.GetComponentsInChildren<TextMeshPro>())
+        {
+            tmp.SetText("Loading . . .");
+        }
+
         if (currentModel.GetComponent<ModelGazeRecorder>().isRecording)
         {
             currentModel.GetComponent<ModelGazeRecorder>().SetIsRecording(false);
             currentModel.GetComponent<ModelGazeRecorder>().SaveAllData();
             currentModel.GetComponent<EyeTrackingTarget>().enabled = false;
+        }
+
+        foreach (TextMeshPro tmp in promptObject.GetComponentsInChildren<TextMeshPro>())
+        {
+            tmp.SetText("Say 'Start'");
         }
     }
 
