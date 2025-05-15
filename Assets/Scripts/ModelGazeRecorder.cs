@@ -441,21 +441,11 @@ public class ModelGazeRecorder : MonoBehaviour
         Debug.Log("OBJ AT:" + Path.Combine(dir, "model.obj").ToString());
     }
 
-    private Vector3 GetAdjustedPosition(GazeData gaze)
-    {
-        if (gaze.targetName == currentSession.selectedObjectName &&
-            gaze.localHitPosition != Vector3.zero)
-        {
-            return gaze.localHitPosition;
-        }
-        return gaze.hitPosition;
-    }
-
     private void ExportPointCloud(GameObject target)
     {
-        positionFrequency.Clear();
-        uniquePositions.Clear();
-        maxFrequency = 0;
+        //positionFrequency.Clear();
+        //uniquePositions.Clear();
+        //maxFrequency = 0;
 
         Renderer targetRenderer = target.GetComponent<Renderer>();
         if (targetRenderer == null)
@@ -471,14 +461,8 @@ public class ModelGazeRecorder : MonoBehaviour
 
         foreach (var gaze in currentSession.gazeData)
         {
-            if (gaze.hitPosition == Vector3.zero) continue;
-            Vector3 pos = GetAdjustedPosition(gaze);
-
-            //if (gaze.targetName != currentSession.selectedObjectName ||
-            //    gaze.localHitPosition == Vector3.zero)
-            //{
-            //    pos = target.transform.InverseTransformPoint(pos);
-            //}
+            if (gaze.localHitPosition == Vector3.zero) continue;
+            Vector3 pos = gaze.localHitPosition;
 
             if (localBounds.Contains(pos) && gaze.targetName == target.name && gaze.targetName != "null")
             {
