@@ -19569,7 +19569,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -9130586711530211351, guid: 67126d5bf6a653d4c92ee0efe3d3d751, type: 3}
+  - {fileID: -9130586711530211351, guid: b4df3e0c43bd64041846072e4bf6488e, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -19671,7 +19671,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5504146626065497091}
-  m_Mesh: {fileID: -6790345679795684806, guid: 67126d5bf6a653d4c92ee0efe3d3d751, type: 3}
+  m_Mesh: {fileID: -6790345679795684806, guid: b4df3e0c43bd64041846072e4bf6488e, type: 3}
 --- !u!4 &2153725952324544496
 Transform:
   m_ObjectHideFlags: 0
@@ -20489,7 +20489,7 @@ MonoBehaviour:
   gaussianSigma: 0.005
   viewBlocker: {fileID: 240791636}
   audioSampleRate: 44100
-  meshFilter: {fileID: 1440982292921646123, guid: 67126d5bf6a653d4c92ee0efe3d3d751, type: 3}
+  meshFilter: {fileID: -7581375637961344454, guid: b4df3e0c43bd64041846072e4bf6488e, type: 3}
   isRecording: 0
   currentSession:
     selectedObjectName: 
@@ -20557,7 +20557,7 @@ MeshCollider:
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
-  m_Mesh: {fileID: -6790345679795684806, guid: 67126d5bf6a653d4c92ee0efe3d3d751, type: 3}
+  m_Mesh: {fileID: -6790345679795684806, guid: b4df3e0c43bd64041846072e4bf6488e, type: 3}
 --- !u!114 &5504146626065497096
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20572,7 +20572,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   viewBlocker: {fileID: 240791636}
   promptObject: {fileID: 1730813650}
-  meshFilter: {fileID: 1440982292921646123, guid: 67126d5bf6a653d4c92ee0efe3d3d751, type: 3}
+  meshFilter: {fileID: -7581375637961344454, guid: b4df3e0c43bd64041846072e4bf6488e, type: 3}
   recordGazeDuration: 20
   recordVoiceDuration: 20
   audioSampleRate: 44100

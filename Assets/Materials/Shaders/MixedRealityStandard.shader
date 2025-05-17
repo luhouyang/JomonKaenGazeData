@@ -30,8 +30,8 @@ Shader "Mixed Reality Toolkit/Standard"
         _TriplanarMappingBlendSharpness("Blend Sharpness", Range(1.0, 16.0)) = 4.0
 
         // Rendering options.
-        [Toggle(_DIRECTIONAL_LIGHT)] _DirectionalLight("Directional Light", Float) = 1.0
-        [Toggle(_SPECULAR_HIGHLIGHTS)] _SpecularHighlights("Specular Highlights", Float) = 1.0
+        [Toggle(_DIRECTIONAL_LIGHT)] _DirectionalLight("Directional Light", Float) = 0.0
+        [Toggle(_SPECULAR_HIGHLIGHTS)] _SpecularHighlights("Specular Highlights", Float) = 0.0
         [Toggle(_SPHERICAL_HARMONICS)] _SphericalHarmonics("Spherical Harmonics", Float) = 0.0
         [Toggle(_REFLECTIONS)] _Reflections("Reflections", Float) = 0.0
         [Toggle(_REFRACTION)] _Refraction("Refraction", Float) = 0.0
@@ -54,7 +54,7 @@ Shader "Mixed Reality Toolkit/Standard"
         _FadeMinValue("Fade Min Value", Range(0.0, 1.0)) = 0.0
 
         // Fluent options.
-        [Toggle(_HOVER_LIGHT)] _HoverLight("Hover Light", Float) = 1.0
+        [Toggle(_HOVER_LIGHT)] _HoverLight("Hover Light", Float) = 0.0
         [Toggle(_HOVER_COLOR_OVERRIDE)] _EnableHoverColorOverride("Hover Color Override", Float) = 0.0
         _HoverColorOverride("Hover Color Override", Color) = (1.0, 1.0, 1.0, 1.0)
         [Toggle(_PROXIMITY_LIGHT)] _ProximityLight("Proximity Light", Float) = 0.0
