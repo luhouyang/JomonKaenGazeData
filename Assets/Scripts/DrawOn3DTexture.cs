@@ -103,6 +103,17 @@ namespace Microsoft.MixedReality.Toolkit.SampleGazeData
             }
         }
 
+        public void ToggleLiveHeatmap(bool val) 
+        {
+            if (val)
+            {
+                EyeTarget.WhileLookingAtTarget.AddListener(OnLookAt);
+            } else
+            {
+                EyeTarget.WhileLookingAtTarget.RemoveListener(OnLookAt);
+            }
+        }
+
         public void DrawAtThisHitPos(Vector3 hitPosition)
         {
             if (useRaycastForUV)

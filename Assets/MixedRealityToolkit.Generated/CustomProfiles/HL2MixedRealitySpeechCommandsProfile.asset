@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isCustomProfile: 1
   startBehavior: 0
-  recognitionConfidenceLevel: 2
+  recognitionConfidenceLevel: 1
   speechCommands:
   - localizationKey: 
     keyword: Menu
@@ -74,6 +74,20 @@ MonoBehaviour:
       axisConstraint: 0
   - localizationKey: 
     keyword: Next
+    keyCode: 0
+    action:
+      id: 0
+      description: None
+      axisConstraint: 0
+  - localizationKey: 
+    keyword: Hajime
+    keyCode: 0
+    action:
+      id: 0
+      description: None
+      axisConstraint: 0
+  - localizationKey: 
+    keyword: Tsugi
     keyCode: 0
     action:
       id: 0

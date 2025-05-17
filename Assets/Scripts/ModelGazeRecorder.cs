@@ -97,6 +97,7 @@ public class ModelGazeRecorder : MonoBehaviour
 
     public string sessionPath;
     private string dir;
+    private double startingTime;
 
     private List<Vector3> uniquePositions = new List<Vector3>();
     private Dictionary<Vector3, int> positionFrequency = new Dictionary<Vector3, int>();
@@ -167,6 +168,8 @@ public class ModelGazeRecorder : MonoBehaviour
     {
         isRecording = val;
         viewBlocker.SetActive(!val);
+
+        startingTime = Time.unscaledTimeAsDouble;
 
         if (val && !isRecordingAudio)
         {
@@ -294,7 +297,7 @@ public class ModelGazeRecorder : MonoBehaviour
 
         var gaze = new GazeData
         {
-            timestamp = Time.unscaledTimeAsDouble,
+            timestamp = Time.unscaledTimeAsDouble - startingTime,
             headPosition = CameraCache.Main.transform.position,
             headForward = CameraCache.Main.transform.forward,
             eyeOrigin = eyeProvider.GazeOrigin,
@@ -429,16 +432,29 @@ public class ModelGazeRecorder : MonoBehaviour
 
     public void ExportAllFormats(GameObject target)
     {
-        Export3DModel();
+        Export3DModel(target);
         ExportPointCloud(target);
     }
 
-    private void Export3DModel()
+    private void Export3DModel(GameObject target)
     {
         Mesh mesh = meshFilter.sharedMesh;
-        string objContent = MeshToString(mesh);
+        string objContent = MeshToString(mesh, target);
         File.WriteAllText(Path.Combine(dir, "model.obj"), objContent);
         Debug.Log("OBJ AT:" + Path.Combine(dir, "model.obj").ToString());
+    }
+
+    private Vector3 UnapplyUnityTransforms(Vector3 originalVector, Vector3 anglesInDegrees)
+    {
+        Quaternion xRotation = Quaternion.AngleAxis(anglesInDegrees.x, Vector3.right);
+        Quaternion yRotation = Quaternion.AngleAxis(anglesInDegrees.y, Vector3.up);
+        Quaternion zRotation = Quaternion.AngleAxis(anglesInDegrees.z, Vector3.forward);
+
+        Vector3 rotatedVector = xRotation * originalVector;
+        rotatedVector = yRotation * rotatedVector;
+        rotatedVector = zRotation * rotatedVector;
+
+        return new Vector3(-rotatedVector.x, rotatedVector.y, rotatedVector.z);
     }
 
     private void ExportPointCloud(GameObject target)
@@ -479,8 +495,9 @@ public class ModelGazeRecorder : MonoBehaviour
                 //{
                 //    maxFrequency = positionFrequency[pos];
                 //}
+                pos = UnapplyUnityTransforms(pos, target.transform.eulerAngles); // compensate for rotation by Unity when importing
                 positions.Add(pos);
-                sb.AppendLine($"{pos.x:F4},{pos.y:F4},{pos.z:F4},{gaze.timestamp}");
+                sb.AppendLine($"{pos.x:F6},{pos.y:F6},{pos.z:F6},{gaze.timestamp:F6}");
             }
         }
 
@@ -496,37 +513,160 @@ public class ModelGazeRecorder : MonoBehaviour
         Debug.Log("POINTCLOUD AT:" + Path.Combine(dir, "pointcloud.csv").ToString());
     }
 
+    //private Vector3 UnapplyUnityTranforms(Vector3 originalVector, float angleInDegrees)
+    //{
+    //    // Create a Quaternion for the rotation
+    //    Quaternion rotation = Quaternion.AngleAxis(angleInDegrees, Vector3.right);
+
+    //    // Rotate the vector using the Quaternion
+    //    Vector3 rotatedVector = rotation * originalVector;
+
+    //    // negate x, to flip x-axis, also to compensate for Unity importing behaviour
+    //    return new Vector3(-rotatedVector.x, rotatedVector.y, rotatedVector.z);
+    //}
+   
+
     private float CalculateHeatmapIntensity(Vector3 position)
     {
         return positionFrequency.ContainsKey(position) ?
             (float)positionFrequency[position] / maxFrequency : 0f;
     }
 
-    private static string MeshToString(Mesh mesh)
+    //private static string MeshToString(Mesh mesh)
+    //{
+    //    StringBuilder sb = new StringBuilder();
+    //    sb.Append("# Exported Heatmap Object\n");
+
+    //    foreach (Vector3 vertex in mesh.vertices)
+    //    {
+    //        sb.Append($"v {-vertex.x:F4} {vertex.y:F4} {vertex.z:F4}\n");
+    //    }
+
+    //    foreach (Vector3 normal in mesh.normals)
+    //    {
+    //        sb.Append($"vn {-normal.x:F4} {normal.y:F4} {normal.z:F4}\n");
+    //    }
+
+    //    foreach (Vector2 uv in mesh.uv)
+    //    {
+    //        sb.Append($"vt {-uv.x:F4} {uv.y:F4}\n");
+    //    }
+
+    //    for (int i = 0; i < mesh.subMeshCount; i++)
+    //    {
+    //        int[] triangles = mesh.GetTriangles(i);
+    //        for (int j = 0; j < triangles.Length; j += 3)
+    //        {
+    //            sb.Append($"f {triangles[j] + 1}/{triangles[j] + 1}/{triangles[j] + 1} " +
+    //                      $"{triangles[j + 1] + 1}/{triangles[j + 1] + 1}/{triangles[j + 1] + 1} " +
+    //                      $"{triangles[j + 2] + 1}/{triangles[j + 2] + 1}/{triangles[j + 2] + 1}\n");
+    //        }
+    //    }
+
+    //    return sb.ToString();
+    //}
+
+    //public string MeshToString(Mesh mesh, GameObject target)
+    //{
+    //    StringBuilder sb = new StringBuilder();
+    //    sb.Append("# Exported Heatmap Object\n");
+
+    //    // Make a copy of the mesh so we don't modify the original
+    //    Mesh tempMesh = Instantiate(mesh);
+
+    //    // Apply transformation to vertices
+    //    Vector3[] transformedVertices = new Vector3[tempMesh.vertexCount];
+    //    for (int i = 0; i < tempMesh.vertices.Length; i++)
+    //    {
+    //        transformedVertices[i] = UnapplyUnityTranforms(tempMesh.vertices[i], target.transform.rotation.x);
+    //    }
+    //    tempMesh.vertices = transformedVertices;
+
+    //    // Recalculate normals based on transformed geometry
+    //    tempMesh.RecalculateNormals();
+
+    //    // Write out vertices
+    //    foreach (Vector3 vertex in tempMesh.vertices)
+    //    {
+    //        sb.Append($"v {vertex.x:F4} {vertex.y:F4} {vertex.z:F4}\n");
+    //    }
+
+    //    // Write out normals
+    //    foreach (Vector3 normal in tempMesh.normals)
+    //    {
+    //        sb.Append($"vn {normal.x:F4} {normal.y:F4} {normal.z:F4}\n");
+    //    }
+
+    //    // Write out UVs
+    //    foreach (Vector2 uv in tempMesh.uv)
+    //    {
+    //        sb.Append($"vt {uv.x:F4} {uv.y:F4}\n");
+    //    }
+
+    //    // Write out faces (with winding order flipped)
+    //    for (int i = 0; i < tempMesh.subMeshCount; i++)
+    //    {
+    //        int[] triangles = tempMesh.GetTriangles(i);
+    //        for (int j = 0; j < triangles.Length; j += 3)
+    //        {
+    //            // Swap first and third index to reverse triangle winding
+    //            int temp = triangles[j];
+    //            triangles[j] = triangles[j + 2];
+    //            triangles[j + 2] = temp;
+
+    //            // Output face
+    //            sb.Append($"f {triangles[j] + 1}/{triangles[j] + 1}/{triangles[j] + 1} " +
+    //                      $"{triangles[j + 1] + 1}/{triangles[j + 1] + 1}/{triangles[j + 1] + 1} " +
+    //                      $"{triangles[j + 2] + 1}/{triangles[j + 2] + 1}/{triangles[j + 2] + 1}\n");
+    //        }
+    //    }
+
+    //    return sb.ToString();
+    //}
+
+    private string MeshToString(Mesh mesh, GameObject target)
     {
         StringBuilder sb = new StringBuilder();
-        sb.Append("# Exported Heatmap Object\n");
+        sb.Append("# Exported Gaze Object\n");
 
-        foreach (Vector3 vertex in mesh.vertices)
+        Mesh tempMesh = Instantiate(mesh);
+
+        Vector3[] transVertices = new Vector3[tempMesh.vertexCount];
+        for (int i = 0; i < tempMesh.vertices.Length; i++)
         {
-            sb.Append($"v {vertex.x:F4} {vertex.y:F4} {vertex.z:F4}\n");
+            transVertices[i] = UnapplyUnityTransforms(tempMesh.vertices[i], target.transform.eulerAngles);
+        }
+        tempMesh.vertices = transVertices;
+
+        tempMesh.RecalculateNormals();
+
+        foreach (Vector3 vertex in tempMesh.vertices)
+        {
+            sb.Append($"v {vertex.x:F6} {vertex.y:F6} {vertex.z:F6}\n");
         }
 
-        foreach (Vector3 normal in mesh.normals)
+        foreach (Vector3 normal in tempMesh.normals)
         {
-            sb.Append($"vn {normal.x:F4} {normal.y:F4} {normal.z:F4}\n");
+            sb.Append($"vn {normal.x:F6} {normal.y:F6} {normal.z:F6}\n");
         }
 
-        foreach (Vector2 uv in mesh.uv)
+        foreach (Vector2 uv in tempMesh.uv)
         {
-            sb.Append($"vt {uv.x:F4} {uv.y:F4}\n");
+            sb.Append($"vt {uv.x:F6} {uv.y:F6}\n");
         }
 
-        for (int i = 0; i < mesh.subMeshCount; i++)
+        // Write out faces (with winding order flipped)
+        for (int i = 0; i < tempMesh.subMeshCount; i++)
         {
-            int[] triangles = mesh.GetTriangles(i);
+            int[] triangles = tempMesh.GetTriangles(i);
             for (int j = 0; j < triangles.Length; j += 3)
             {
+                // Swap first and third index to reverse triangle winding
+                int temp = triangles[j];
+                triangles[j] = triangles[j + 2];
+                triangles[j + 2] = temp;
+
+                // Output face
                 sb.Append($"f {triangles[j] + 1}/{triangles[j] + 1}/{triangles[j] + 1} " +
                           $"{triangles[j + 1] + 1}/{triangles[j + 1] + 1}/{triangles[j + 1] + 1} " +
                           $"{triangles[j + 2] + 1}/{triangles[j + 2] + 1}/{triangles[j + 2] + 1}\n");
