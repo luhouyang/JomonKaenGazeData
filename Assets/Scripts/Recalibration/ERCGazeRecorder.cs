@@ -26,13 +26,6 @@ public class ERCGazeRecorder : MonoBehaviour
         public Vector3 localHitPosition;
     }
 
-    [System.Serializable]
-    public class SessionData
-    {
-        public string selectedObjectName;
-        public List<GazeData> gazeData = new List<GazeData>();
-    }
-
     [SerializeField]
     private int numTarget = 80;
 
@@ -45,14 +38,15 @@ public class ERCGazeRecorder : MonoBehaviour
     private string sessionPath;
     private int numTargetAppeared;
     private double timeInterval;
+    private float zSum;
+    private float zNum;
+    private int currentIndex;
     private GameObject currentTarget;
 
     public bool isRecording;
-    public SessionData currentSession = new SessionData();
 
     private string saveDir;
     private double startingTime;
-    private StringBuilder gaze_csv = new StringBuilder();
     private Renderer targetRenderer;
     private Bounds localBounds;
     private StringBuilder pc_sb = new StringBuilder();
@@ -86,7 +80,13 @@ public class ERCGazeRecorder : MonoBehaviour
             {
                 timeInterval = Range(100, 151) / 100.0;
                 currentTarget.SetActive(false);
-                currentTarget = targetList[Range(1, targetList.Count)];
+                int nextIndex = Range(0, targetList.Count);
+                while (currentIndex == nextIndex)
+                {
+                    nextIndex = Range(0, targetList.Count);
+                }
+                currentIndex = nextIndex;
+                currentTarget = targetList[currentIndex];
                 currentTarget.SetActive(true);
                 numTargetAppeared++;
             }
@@ -107,28 +107,23 @@ public class ERCGazeRecorder : MonoBehaviour
             numTargetAppeared = 1;
             timeInterval = Range(100, 151) / 100.0;
 
-            currentSession.selectedObjectName = currentModel.name;
-            saveDir = Path.Combine(Application.persistentDataPath, sessionPath, currentSession.selectedObjectName);
-
-            gaze_csv = new StringBuilder();
-            gaze_csv.AppendLine("Timestamp,HeadX,HeadY,HeadZ,HeadFwdX,HeadFwdY,HeadFwdZ,EyeOriginX,EyeOriginY,EyeOriginZ,EyeDirX,EyeDirY,EyeDirZ,HitX,HitY,HitZ,TargetName");
+            saveDir = Path.Combine(Application.persistentDataPath, sessionPath, currentModel.name);
 
             targetRenderer = currentModel.GetComponent<Renderer>();
             localBounds = targetRenderer.localBounds;
             pc_sb = new StringBuilder();
-            pc_sb.AppendLine("x,y,z,timestamp");
+            pc_sb.AppendLine("x,y,z,targetX,targetY,targetZ,eyeX,eyeY,eyeZ,timestamp");
 
             if (!Directory.Exists(saveDir))
             {
                 Directory.CreateDirectory(saveDir);
             }
 
-            currentTarget = targetList[Range(1, targetList.Count)];
+            currentIndex = Range(0, targetList.Count);
+            currentTarget = targetList[currentIndex];
             currentTarget.SetActive(true);
         }
     }
-
-
 
     private void RecordGazeData(GameObject target)
     {
@@ -146,43 +141,22 @@ public class ERCGazeRecorder : MonoBehaviour
             targetName = target != null ? target.name : "null"
         };
 
-        if (target != null && target.name == currentSession.selectedObjectName)
+        if (target != null && target.name == currentModel.name)
         {
+            Vector3 tarTrans = currentTarget.transform.position;
             gaze.localHitPosition = target.transform.InverseTransformPoint(gaze.hitPosition);
             Vector3 pos = gaze.localHitPosition;
             if (localBounds.Contains(pos) && gaze.targetName == target.name && gaze.targetName != "null")
             {
-                pos = UnapplyUnityTransforms(pos, target.transform.eulerAngles);
-                pc_sb.AppendLine($"{pos.x:F6},{pos.y:F6},{pos.z:F6},{gaze.timestamp:F6}");
+                pc_sb.AppendLine($"{pos.x:F3},{pos.y:F3},{pos.z:F3},{tarTrans.x:F3},{tarTrans.y:F3},{tarTrans.z:F3},{gaze.headPosition.x:F3},{gaze.headPosition.y:F3},{gaze.headPosition.z:F3},{(gaze.timestamp - startingTime):F3}");
+                zSum += pos.z;
+                zNum += 1.0f;
             }
         }
         else
         {
             gaze.localHitPosition = Vector3.zero;
         }
-
-        currentSession.gazeData.Add(gaze);
-
-        gaze_csv.AppendLine($"{gaze.timestamp:F6}," +
-                           $"{gaze.headPosition.x:F4},{gaze.headPosition.y:F4},{gaze.headPosition.z:F4}," +
-                           $"{gaze.headForward.x:F4},{gaze.headForward.y:F4},{gaze.headForward.z:F4}," +
-                           $"{gaze.eyeOrigin.x:F4},{gaze.eyeOrigin.y:F4},{gaze.eyeOrigin.z:F4}," +
-                           $"{gaze.eyeDirection.x:F4},{gaze.eyeDirection.y:F4},{gaze.eyeDirection.z:F4}," +
-                           $"{gaze.hitPosition.x:F4},{gaze.hitPosition.y:F4},{gaze.hitPosition.z:F4}," +
-                           $"{gaze.targetName}");
-    }
-
-    private Vector3 UnapplyUnityTransforms(Vector3 originalVector, Vector3 anglesInDegrees)
-    {
-        Quaternion xRotation = Quaternion.AngleAxis(anglesInDegrees.x, Vector3.right);
-        Quaternion yRotation = Quaternion.AngleAxis(anglesInDegrees.y, Vector3.up);
-        Quaternion zRotation = Quaternion.AngleAxis(anglesInDegrees.z, Vector3.forward);
-
-        Vector3 rotatedVector = xRotation * originalVector;
-        rotatedVector = yRotation * rotatedVector;
-        rotatedVector = zRotation * rotatedVector;
-
-        return new Vector3(-rotatedVector.x, rotatedVector.y, rotatedVector.z);
     }
 
     public void ResetAll()
@@ -191,31 +165,31 @@ public class ERCGazeRecorder : MonoBehaviour
         {
             SetIsRecording(false);
         }
-        currentSession = new SessionData();
         StopAllCoroutines(); // Ensure any ongoing audio recording coroutines are stopped
     }
 
     public void SaveAllData()
     {
-        SaveSession("session.json");
-        SaveGazeData("gaze_data.csv");
         ExportPointCloud(currentModel);
+        SaveTargetCoordinates("target.csv");
         Debug.Log("SAVED DATA AT: " + saveDir);
-    }
-
-    public void SaveSession(string fileName)
-    {
-        string json = JsonUtility.ToJson(currentSession);
-        File.WriteAllText(Path.Combine(saveDir, fileName), json);
-    }
-
-    public void SaveGazeData(string fileName)
-    {
-        File.WriteAllText(Path.Combine(saveDir, fileName), gaze_csv.ToString());
     }
 
     public void ExportPointCloud(GameObject target)
     {
         File.WriteAllText(Path.Combine(saveDir, "pointcloud.csv"), pc_sb.ToString());
+    }
+
+    public void SaveTargetCoordinates(string fileName)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("x,y,z,scaleX,scaleY,scaleZ,targetName");
+        foreach (GameObject target in targetList)
+        {
+            Vector3 pos = target.transform.localPosition;
+            pos = new Vector3(pos.x, pos.y, pos.z + (zSum / zNum));
+            sb.AppendLine($"{pos.x:F3},{pos.y:F3},{pos.z:F3},{target.transform.localScale.x},{target.transform.localScale.y},{target.transform.localScale.z},{target.name}");
+        }
+        File.WriteAllText(Path.Combine(saveDir, fileName), sb.ToString());
     }
 }

@@ -310,15 +310,15 @@ public class ExpModelGazeRecorder : MonoBehaviour
             gaze.localHitPosition = Vector3.zero;
         }
 
-        currentSession.gazeData.Add(gaze);
+        //currentSession.gazeData.Add(gaze);
 
-        gaze_csv.AppendLine($"{gaze.timestamp:F6}," +
-                           $"{gaze.headPosition.x:F4},{gaze.headPosition.y:F4},{gaze.headPosition.z:F4}," +
-                           $"{gaze.headForward.x:F4},{gaze.headForward.y:F4},{gaze.headForward.z:F4}," +
-                           $"{gaze.eyeOrigin.x:F4},{gaze.eyeOrigin.y:F4},{gaze.eyeOrigin.z:F4}," +
-                           $"{gaze.eyeDirection.x:F4},{gaze.eyeDirection.y:F4},{gaze.eyeDirection.z:F4}," +
-                           $"{gaze.hitPosition.x:F4},{gaze.hitPosition.y:F4},{gaze.hitPosition.z:F4}," +
-                           $"{gaze.targetName}");
+        //gaze_csv.AppendLine($"{gaze.timestamp:F6}," +
+        //                   $"{gaze.headPosition.x:F4},{gaze.headPosition.y:F4},{gaze.headPosition.z:F4}," +
+        //                   $"{gaze.headForward.x:F4},{gaze.headForward.y:F4},{gaze.headForward.z:F4}," +
+        //                   $"{gaze.eyeOrigin.x:F4},{gaze.eyeOrigin.y:F4},{gaze.eyeOrigin.z:F4}," +
+        //                   $"{gaze.eyeDirection.x:F4},{gaze.eyeDirection.y:F4},{gaze.eyeDirection.z:F4}," +
+        //                   $"{gaze.hitPosition.x:F4},{gaze.hitPosition.y:F4},{gaze.hitPosition.z:F4}," +
+        //                   $"{gaze.targetName}");
     }
 
     private Vector3 UnapplyUnityTransforms(Vector3 originalVector, Vector3 anglesInDegrees)
@@ -359,8 +359,8 @@ public class ExpModelGazeRecorder : MonoBehaviour
 
     public void SaveAllData() 
     {
-        SaveSession("session.json");
-        SaveGazeData("gaze_data.csv");
+        //SaveSession("session.json");
+        //SaveGazeData("gaze_data.csv");
         ExportPointCloud(ExpModelController.currentModel);
         Export3DModel(ExpModelController.currentModel);
         Debug.Log("SAVED DATA AT: " + saveDir);
