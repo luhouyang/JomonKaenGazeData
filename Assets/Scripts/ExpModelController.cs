@@ -15,6 +15,9 @@ public class ExpModelController : MonoBehaviour
     [SerializeField]
     private GameObject promptObject;
 
+    [SerializeField]
+    private GameObject eyeRecalibrationObject;
+
     private List<GameObject> models = new List<GameObject>();
     private int currentModelIndex = 0;
     private Vector3 previousModelPosition = Vector3.zero;
@@ -171,5 +174,10 @@ public class ExpModelController : MonoBehaviour
     public List<GameObject> GetGroups()
     {
         return groups;
+    }
+
+    public void EyeRecalibrationTesting()
+    {
+        eyeRecalibrationObject.SetActive(!eyeRecalibrationObject.activeInHierarchy);
     }
 }
