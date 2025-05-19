@@ -42,9 +42,8 @@ public class ExpModelGazeRecorder : MonoBehaviour
     [Header("Heatmap / Mesh Settings")]
     public MeshFilter meshFilter;
 
-    [Header("Timing")]
-    [SerializeField] private float recordGazeDuration = 20.0f;
-    [SerializeField] private float recordVoiceDuration = 20.0f;
+    private float recordGazeDuration = 60.0f;
+    private float recordVoiceDuration = 60.0f;
 
     [Header("Audio Recording Settings")]
     public int audioSampleRate = 44100;
@@ -66,6 +65,9 @@ public class ExpModelGazeRecorder : MonoBehaviour
     private AudioClip recordedAudio;
     private bool isRecordingAudio;
     private AudioSource audioSource;
+    private float chunkStartTime = 0f;
+    private int chunkIndex = 0;
+    private List<string> savedFiles = new List<string>();
 
     // control flow flags
     private bool savedGaze;
@@ -126,8 +128,14 @@ public class ExpModelGazeRecorder : MonoBehaviour
             promptObject.GetComponent<TextMeshPro>().SetText("Say 'Next'");
 
             StopAudioRecording();
-            SaveAudioData();
+            SaveFileList();
             SetIsRecording(false);
+        }
+
+        if (isRecordingAudio && Time.time - chunkStartTime >= 59.9f)
+        {
+            StopAudioRecording(); // Save current chunk
+            StartCoroutine(RestartAudioRecordingAfterDelay());
         }
     }
 
@@ -164,28 +172,38 @@ public class ExpModelGazeRecorder : MonoBehaviour
         // start audio recording here
         if (val && !isRecordingAudio)
         {
+            chunkIndex = 0; // Reset chunk index
+            savedFiles.Clear(); // Clear file list
             StartAudioRecording();
         }
         else if (!val && isRecordingAudio)
         {
             StopAudioRecording();
-            SaveAudioData();
+            SaveFileList(); // Save file list
         }
     }
 
-    private void StartAudioRecording() 
+    private IEnumerator RestartAudioRecordingAfterDelay()
     {
-        recordedAudio = Microphone.Start(null, false, 60, audioSampleRate);
-        isRecordingAudio = true;
+        yield return new WaitForSeconds(0.1f); // Small delay
+        StartAudioRecording();
     }
 
-    private void StopAudioRecording() 
+    private void StartAudioRecording()
+    {
+        recordedAudio = Microphone.Start(null, false, 60, audioSampleRate); // loop = false
+        isRecordingAudio = true;
+        chunkStartTime = Time.time;
+        Debug.Log("Started audio recording (60s chunk).");
+    }
+
+    private void StopAudioRecording()
     {
         if (!isRecordingAudio) return;
-
         Microphone.End(null);
         SaveAudioData();
         isRecordingAudio = false;
+        Debug.Log("Stopped audio recording and saved final chunk.");
     }
 
     private byte[] ConvertAudioClipToWAV(AudioClip clip) 
@@ -231,13 +249,34 @@ public class ExpModelGazeRecorder : MonoBehaviour
         return wavBytes;
     }
 
-    private void SaveAudioData() 
+    private void SaveAudioData()
     {
-        if (recordedAudio == null) return;
+        if (recordedAudio == null)
+        {
+            return;
+        }
 
         byte[] wavData = ConvertAudioClipToWAV(recordedAudio);
-        File.WriteAllBytes(Path.Combine(saveDir, "audio.wav"), wavData);
-        Debug.Log("AUDIO DATA AT: " + saveDir);
+        string audioFileName = $"session_audio_{chunkIndex}.wav";
+        string fullPath = Path.Combine(saveDir, audioFileName);
+        File.WriteAllBytes(fullPath, wavData);
+        Debug.Log($"Audio chunk saved: {fullPath}");
+        savedFiles.Add(audioFileName);
+        chunkIndex++;
+    }
+
+    private void SaveFileList()
+    {
+        // IN CMD run: ffmpeg -f concat -safe 0 -i filelist.txt -c copy output.wav
+        StringBuilder sb = new StringBuilder();
+        foreach (string file in savedFiles)
+        {
+            sb.AppendLine("file '" + file + "'");
+        }
+
+        string listFilePath = Path.Combine(saveDir, "filelist.txt");
+        File.WriteAllText(listFilePath, sb.ToString());
+        Debug.Log("File list saved to: " + listFilePath);
     }
 
     private void RecordGazeData(GameObject target) 

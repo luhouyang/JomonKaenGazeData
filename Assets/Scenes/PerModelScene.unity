@@ -15706,7 +15706,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1499476698
 Transform:
   m_ObjectHideFlags: 0
@@ -23013,8 +23013,6 @@ MonoBehaviour:
   viewBlocker: {fileID: 1144272863}
   promptObject: {fileID: 1932023560}
   meshFilter: {fileID: -4970914690319396094, guid: 555d0089d91b7c648a9e81b032d8bac3, type: 3}
-  recordGazeDuration: 20
-  recordVoiceDuration: 20
   audioSampleRate: 44100
   sessionPath: 
   isRecording: 0
@@ -23095,7 +23093,7 @@ MonoBehaviour:
   gaussianSigma: 0.005
   viewBlocker: {fileID: 744063137}
   audioSampleRate: 44100
-  meshFilter: {fileID: 2994689558194763913, guid: b5ee155819359124093a00568dd84382, type: 3}
+  meshFilter: {fileID: -7105198425336294502, guid: b5ee155819359124093a00568dd84382, type: 3}
   isRecording: 0
   currentSession:
     selectedObjectName: 
@@ -23178,9 +23176,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   viewBlocker: {fileID: 744063137}
   promptObject: {fileID: 1474688526}
-  meshFilter: {fileID: 2994689558194763913, guid: b5ee155819359124093a00568dd84382, type: 3}
-  recordGazeDuration: 20
-  recordVoiceDuration: 20
+  meshFilter: {fileID: -7105198425336294502, guid: b5ee155819359124093a00568dd84382, type: 3}
   audioSampleRate: 44100
   sessionPath: 
   isRecording: 0
@@ -23338,7 +23334,7 @@ MonoBehaviour:
   gaussianSigma: 0.005
   viewBlocker: {fileID: 1497663874}
   audioSampleRate: 44100
-  meshFilter: {fileID: -3305863820463947585, guid: a83c6d5909fe4ca4f92ee76cd71c5004, type: 3}
+  meshFilter: {fileID: -1789699058780134368, guid: a83c6d5909fe4ca4f92ee76cd71c5004, type: 3}
   isRecording: 0
   currentSession:
     selectedObjectName: 
@@ -23421,9 +23417,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   viewBlocker: {fileID: 1497663874}
   promptObject: {fileID: 800110450}
-  meshFilter: {fileID: -3305863820463947585, guid: a83c6d5909fe4ca4f92ee76cd71c5004, type: 3}
-  recordGazeDuration: 20
-  recordVoiceDuration: 20
+  meshFilter: {fileID: -1789699058780134368, guid: a83c6d5909fe4ca4f92ee76cd71c5004, type: 3}
   audioSampleRate: 44100
   sessionPath: 
   isRecording: 0
@@ -23531,7 +23525,7 @@ MonoBehaviour:
   gaussianSigma: 0.005
   viewBlocker: {fileID: 240791636}
   audioSampleRate: 44100
-  meshFilter: {fileID: -7581375637961344454, guid: b4df3e0c43bd64041846072e4bf6488e, type: 3}
+  meshFilter: {fileID: 8731207222217967392, guid: b4df3e0c43bd64041846072e4bf6488e, type: 3}
   isRecording: 0
   currentSession:
     selectedObjectName: 
@@ -23614,9 +23608,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   viewBlocker: {fileID: 240791636}
   promptObject: {fileID: 1730813650}
-  meshFilter: {fileID: -7581375637961344454, guid: b4df3e0c43bd64041846072e4bf6488e, type: 3}
-  recordGazeDuration: 20
-  recordVoiceDuration: 20
+  meshFilter: {fileID: 8731207222217967392, guid: b4df3e0c43bd64041846072e4bf6488e, type: 3}
   audioSampleRate: 44100
   sessionPath: 
   isRecording: 0
@@ -23739,7 +23731,7 @@ MonoBehaviour:
   gaussianSigma: 0.005
   viewBlocker: {fileID: 974419649}
   audioSampleRate: 44100
-  meshFilter: {fileID: 8969644960830903083, guid: ebdbf8cfeffafd74bb84cb93cc856f60, type: 3}
+  meshFilter: {fileID: 3470334619226217245, guid: ebdbf8cfeffafd74bb84cb93cc856f60, type: 3}
   isRecording: 0
   currentSession:
     selectedObjectName: 
@@ -23822,9 +23814,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   viewBlocker: {fileID: 974419649}
   promptObject: {fileID: 466376}
-  meshFilter: {fileID: 8969644960830903083, guid: ebdbf8cfeffafd74bb84cb93cc856f60, type: 3}
-  recordGazeDuration: 20
-  recordVoiceDuration: 20
+  meshFilter: {fileID: 3470334619226217245, guid: ebdbf8cfeffafd74bb84cb93cc856f60, type: 3}
   audioSampleRate: 44100
   sessionPath: 
   isRecording: 0
@@ -23928,7 +23918,7 @@ MonoBehaviour:
   gaussianSigma: 0.005
   viewBlocker: {fileID: 150920226}
   audioSampleRate: 44100
-  meshFilter: {fileID: 9054309304828496796, guid: 1f2aff82c1e625d44a2866720bff281f, type: 3}
+  meshFilter: {fileID: 4076053006118569446, guid: 1f2aff82c1e625d44a2866720bff281f, type: 3}
   isRecording: 0
   currentSession:
     selectedObjectName: 
@@ -24011,9 +24001,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   viewBlocker: {fileID: 150920226}
   promptObject: {fileID: 870551416}
-  meshFilter: {fileID: 9054309304828496796, guid: 1f2aff82c1e625d44a2866720bff281f, type: 3}
-  recordGazeDuration: 20
-  recordVoiceDuration: 20
+  meshFilter: {fileID: 4076053006118569446, guid: 1f2aff82c1e625d44a2866720bff281f, type: 3}
   audioSampleRate: 44100
   sessionPath: 
   isRecording: 0
@@ -24114,7 +24102,7 @@ MonoBehaviour:
   gaussianSigma: 0.005
   viewBlocker: {fileID: 1180209829}
   audioSampleRate: 44100
-  meshFilter: {fileID: 8852308881140024379, guid: 1dae7e552090a124aa37cdd2772d6def, type: 3}
+  meshFilter: {fileID: 5574090031931184582, guid: 1dae7e552090a124aa37cdd2772d6def, type: 3}
   isRecording: 0
   currentSession:
     selectedObjectName: 
@@ -24197,9 +24185,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   viewBlocker: {fileID: 1180209829}
   promptObject: {fileID: 360505089}
-  meshFilter: {fileID: 8852308881140024379, guid: 1dae7e552090a124aa37cdd2772d6def, type: 3}
-  recordGazeDuration: 20
-  recordVoiceDuration: 20
+  meshFilter: {fileID: 5574090031931184582, guid: 1dae7e552090a124aa37cdd2772d6def, type: 3}
   audioSampleRate: 44100
   sessionPath: 
   isRecording: 0
@@ -24349,8 +24335,6 @@ MonoBehaviour:
   viewBlocker: {fileID: 1342616348}
   promptObject: {fileID: 401336115}
   meshFilter: {fileID: 301878524116030002, guid: 39852bd84ec9d1d49af85f2ed703ba4e, type: 3}
-  recordGazeDuration: 20
-  recordVoiceDuration: 20
   audioSampleRate: 44100
   sessionPath: 
   isRecording: 0
@@ -24450,7 +24434,7 @@ MonoBehaviour:
   gaussianSigma: 0.005
   viewBlocker: {fileID: 1013751620}
   audioSampleRate: 44100
-  meshFilter: {fileID: -4789268784170749, guid: 0a84f2b8ac67cec4886e253f863dc86e, type: 3}
+  meshFilter: {fileID: 1357352813944483208, guid: 0a84f2b8ac67cec4886e253f863dc86e, type: 3}
   isRecording: 0
   currentSession:
     selectedObjectName: 
@@ -24533,9 +24517,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   viewBlocker: {fileID: 1013751620}
   promptObject: {fileID: 841768869}
-  meshFilter: {fileID: -4789268784170749, guid: 0a84f2b8ac67cec4886e253f863dc86e, type: 3}
-  recordGazeDuration: 20
-  recordVoiceDuration: 20
+  meshFilter: {fileID: 1357352813944483208, guid: 0a84f2b8ac67cec4886e253f863dc86e, type: 3}
   audioSampleRate: 44100
   sessionPath: 
   isRecording: 0
@@ -24670,8 +24652,6 @@ MonoBehaviour:
   viewBlocker: {fileID: 67363898}
   promptObject: {fileID: 519775292}
   meshFilter: {fileID: -6400281290468069383, guid: a8af668f3a4b154468b73bfbf08a064a, type: 3}
-  recordGazeDuration: 20
-  recordVoiceDuration: 20
   audioSampleRate: 44100
   sessionPath: 
   isRecording: 0
@@ -24737,7 +24717,7 @@ MonoBehaviour:
   gaussianSigma: 0.005
   viewBlocker: {fileID: 788936115}
   audioSampleRate: 44100
-  meshFilter: {fileID: -4380716552487454971, guid: d4876893e41e00f48ba6487289807e89, type: 3}
+  meshFilter: {fileID: 7272266935185821667, guid: d4876893e41e00f48ba6487289807e89, type: 3}
   isRecording: 0
   currentSession:
     selectedObjectName: 
@@ -24820,9 +24800,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   viewBlocker: {fileID: 788936115}
   promptObject: {fileID: 1915943254}
-  meshFilter: {fileID: -4380716552487454971, guid: d4876893e41e00f48ba6487289807e89, type: 3}
-  recordGazeDuration: 20
-  recordVoiceDuration: 20
+  meshFilter: {fileID: 7272266935185821667, guid: d4876893e41e00f48ba6487289807e89, type: 3}
   audioSampleRate: 44100
   sessionPath: 
   isRecording: 0
