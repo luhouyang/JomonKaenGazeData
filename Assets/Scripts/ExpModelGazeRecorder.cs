@@ -141,16 +141,16 @@ public class ExpModelGazeRecorder : MonoBehaviour
 
     public void SetIsRecording(bool val) 
     {
-        isRecording = val;
-        timer = recordGazeDuration + recordVoiceDuration;
-        startingTime = Time.unscaledTimeAsDouble;
-        viewBlocker.SetActive(!val);
-        savedGaze = !val;
+        isRecording = val; // set as recording
+        timer = recordGazeDuration + recordVoiceDuration; // reset timer
+        startingTime = Time.unscaledTimeAsDouble; // record starting time
+        viewBlocker.SetActive(!val); // toggle view blocker
+        savedGaze = !val; // reset recording state
 
         if (val && ExpModelController.currentModel != null)
         {
+            // initialize data collection variables
             currentSession.selectedObjectName = ExpModelController.currentModel.name;
-            saveDir = Path.Combine(Application.persistentDataPath, sessionPath, currentSession.selectedObjectName);
 
             gaze_csv = new StringBuilder();
             gaze_csv.AppendLine("Timestamp,HeadX,HeadY,HeadZ,HeadFwdX,HeadFwdY,HeadFwdZ,EyeOriginX,EyeOriginY,EyeOriginZ,EyeDirX,EyeDirY,EyeDirZ,HitX,HitY,HitZ,TargetName");
@@ -159,7 +159,9 @@ public class ExpModelGazeRecorder : MonoBehaviour
             localBounds = targetRenderer.localBounds;
             pc_sb = new StringBuilder();
             pc_sb.AppendLine("x,y,z,timestamp");
-            
+
+            // create data folder
+            saveDir = Path.Combine(Application.persistentDataPath, sessionPath, currentSession.selectedObjectName);
             if (!Directory.Exists(saveDir)) 
             { 
                 Directory.CreateDirectory(saveDir);

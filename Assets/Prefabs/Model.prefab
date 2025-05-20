@@ -68,7 +68,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0.4}
+  m_AnchoredPosition: {x: 0, y: 0.3}
   m_SizeDelta: {x: 50, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &771514256645261141
@@ -495,8 +495,6 @@ MonoBehaviour:
   viewBlocker: {fileID: 0}
   promptObject: {fileID: 0}
   meshFilter: {fileID: 0}
-  recordGazeDuration: 20
-  recordVoiceDuration: 20
   audioSampleRate: 44100
   sessionPath: 
   isRecording: 0
