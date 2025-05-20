@@ -89,10 +89,10 @@ public class ExpModelGazeRecorder : MonoBehaviour
 
     void Update()
     {
-        /* Check if recording started */
+        /* CHECK IF RECORDING STARTED */
         if (!isRecording || ExpModelController.currentModel == null) return;
 
-        /* Get gazed object */
+        /* GET GAZED OBJECT */
         var eyeTarget = EyeTrackingTarget.LookedAtEyeTarget;
         var gazedObject = eyeTarget != null ? eyeTarget.gameObject : null;
 
