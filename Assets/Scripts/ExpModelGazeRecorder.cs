@@ -89,27 +89,26 @@ public class ExpModelGazeRecorder : MonoBehaviour
 
     void Update()
     {
+        /* Check if recording started */
         if (!isRecording || ExpModelController.currentModel == null) return;
 
+        /* Get gazed object */
         var eyeTarget = EyeTrackingTarget.LookedAtEyeTarget;
         var gazedObject = eyeTarget != null ? eyeTarget.gameObject : null;
 
+        /* RECORD GAZE DATA */
         if (timer > recordVoiceDuration)
         {
             timer -= Time.deltaTime;
 
-            // Record gaze data
             RecordGazeData(gazedObject);
 
             promptObject.GetComponent<TextMeshPro>().SetText($"\nVIEWING TIME: {(timer - recordVoiceDuration):F3}");
         }
+        /* RECORD VOICE DATA */
         else if (timer > 0)
         {
             timer -= Time.deltaTime;
-
-            // stop gaze recording
-            // show prompt 'Question'
-            // save gaze data
 
             promptObject.GetComponent<TextMeshPro>().SetText(question + $"\nTIME: {timer:F3}");
 
@@ -120,11 +119,9 @@ public class ExpModelGazeRecorder : MonoBehaviour
                 savedGaze = true;
             }
         }
+        /* STOP ALL RECORDING & SAVE DATA */
         else
         {
-            // end recording
-            // save voice data
-
             promptObject.GetComponent<TextMeshPro>().SetText("Say 'Next'");
 
             StopAudioRecording();
@@ -132,6 +129,7 @@ public class ExpModelGazeRecorder : MonoBehaviour
             SetIsRecording(false);
         }
 
+        /* RESTART AUDIO RECORDING EVERY 60 SECONDS */
         if (isRecordingAudio && Time.time - chunkStartTime >= 59.9f)
         {
             StopAudioRecording(); // Save current chunk
@@ -141,26 +139,32 @@ public class ExpModelGazeRecorder : MonoBehaviour
 
     public void SetIsRecording(bool val) 
     {
-        isRecording = val; // set as recording
+        /* Reset & clear variables (isRecording, timer, startingTime, savedGaze) */
+        isRecording = val;
         timer = recordGazeDuration + recordVoiceDuration; // reset timer
         startingTime = Time.unscaledTimeAsDouble; // record starting time
-        viewBlocker.SetActive(!val); // toggle view blocker
         savedGaze = !val; // reset recording state
+
+        /* Toggle viewBlocker */
+        viewBlocker.SetActive(!val);
 
         if (val && ExpModelController.currentModel != null)
         {
-            // initialize data collection variables
+            /* Set session data */
             currentSession.selectedObjectName = ExpModelController.currentModel.name;
 
-            gaze_csv = new StringBuilder();
-            gaze_csv.AppendLine("Timestamp,HeadX,HeadY,HeadZ,HeadFwdX,HeadFwdY,HeadFwdZ,EyeOriginX,EyeOriginY,EyeOriginZ,EyeDirX,EyeDirY,EyeDirZ,HitX,HitY,HitZ,TargetName");
-            
+            //gaze_csv = new StringBuilder();
+            //gaze_csv.AppendLine("Timestamp,HeadX,HeadY,HeadZ,HeadFwdX,HeadFwdY,HeadFwdZ,EyeOriginX,EyeOriginY,EyeOriginZ,EyeDirX,EyeDirY,EyeDirZ,HitX,HitY,HitZ,TargetName");
+
+            /* Set gaze object information */
             targetRenderer = ExpModelController.currentModel.GetComponent<Renderer>();
             localBounds = targetRenderer.localBounds;
+
+            /* Initialize point cloud data header */
             pc_sb = new StringBuilder();
             pc_sb.AppendLine("x,y,z,timestamp");
 
-            // create data folder
+            /* Create data directory */
             saveDir = Path.Combine(Application.persistentDataPath, sessionPath, currentSession.selectedObjectName);
             if (!Directory.Exists(saveDir)) 
             { 
@@ -168,23 +172,31 @@ public class ExpModelGazeRecorder : MonoBehaviour
             }
         } else
         {
+            /* Show prompt “Say ‘Next’” */
             promptObject.GetComponent<TextMeshPro>().SetText("Say 'Next'");
         }
 
         // start audio recording here
         if (val && !isRecordingAudio)
         {
+            /* Clear recording variables */
             chunkIndex = 0; // Reset chunk index
             savedFiles.Clear(); // Clear file list
+
+            /* Start voice recording */
             StartAudioRecording();
         }
         else if (!val && isRecordingAudio)
         {
+            /* Stop voice recording */
             StopAudioRecording();
-            SaveFileList(); // Save file list
+
+            /* Export voice recording data */
+            SaveFileList();
         }
     }
 
+    /* RESTART AUDIO RECORDING EVERY 60 SECONDS */
     private IEnumerator RestartAudioRecordingAfterDelay()
     {
         yield return new WaitForSeconds(0.1f); // Small delay
@@ -193,6 +205,7 @@ public class ExpModelGazeRecorder : MonoBehaviour
 
     private void StartAudioRecording()
     {
+        /* RECORD AUDIO FOR 60 SECONDS */
         recordedAudio = Microphone.Start(null, false, 60, audioSampleRate); // loop = false
         isRecordingAudio = true;
         chunkStartTime = Time.time;
@@ -203,6 +216,8 @@ public class ExpModelGazeRecorder : MonoBehaviour
     {
         if (!isRecordingAudio) return;
         Microphone.End(null);
+
+        /* SAVE AUDIO CLIP */
         SaveAudioData();
         isRecordingAudio = false;
         Debug.Log("Stopped audio recording and saved final chunk.");
@@ -283,9 +298,11 @@ public class ExpModelGazeRecorder : MonoBehaviour
 
     private void RecordGazeData(GameObject target) 
     {
+        /* GET EYE GAZE PROVIDER */
         var eyeProvider = CoreServices.InputSystem?.EyeGazeProvider;
         if (eyeProvider == null) return;
 
+        /* CREATE NEW GAZE DATA */
         var gaze = new GazeData
         {
             timestamp = Time.unscaledTimeAsDouble - startingTime,
@@ -297,13 +314,20 @@ public class ExpModelGazeRecorder : MonoBehaviour
             targetName = target != null ? target.name : "null"
         };
 
+        /* CHECK IF GAZE HIT ON SELECTED MODEL */
         if (target != null && target.name == currentSession.selectedObjectName)
         {
+            /* CONVERT GAZE HIT FROM WORLD COORDINATE TO LOCAL COORDINATE */
             gaze.localHitPosition = target.transform.InverseTransformPoint(gaze.hitPosition);
             Vector3 pos = gaze.localHitPosition;
+
+            /* CHECK IF GAZE HIT IS ON SELECTED MODEL */
             if (localBounds.Contains(pos) && gaze.targetName == target.name && gaze.targetName != "null")
             {
+                /* REVERT TRANSFORMS WHEN IMPORTING MODEL */
                 pos = UnapplyUnityTransforms(pos, target.transform.eulerAngles);
+
+                /* ADD GAZE DATA */
                 pc_sb.AppendLine($"{pos.x:F6},{pos.y:F6},{pos.z:F6},{gaze.timestamp:F6}");
             }
         }
@@ -325,6 +349,7 @@ public class ExpModelGazeRecorder : MonoBehaviour
 
     private Vector3 UnapplyUnityTransforms(Vector3 originalVector, Vector3 anglesInDegrees)
     {
+        /* REVERSE ANY ROTATION ON MODEL */
         Quaternion xRotation = Quaternion.AngleAxis(anglesInDegrees.x, Vector3.right);
         Quaternion yRotation = Quaternion.AngleAxis(anglesInDegrees.y, Vector3.up);
         Quaternion zRotation = Quaternion.AngleAxis(anglesInDegrees.z, Vector3.forward);
@@ -333,6 +358,7 @@ public class ExpModelGazeRecorder : MonoBehaviour
         rotatedVector = yRotation * rotatedVector;
         rotatedVector = zRotation * rotatedVector;
 
+        /* NEGATE X TO FLIP THE X-AXIS */
         return new Vector3(-rotatedVector.x, rotatedVector.y, rotatedVector.z);
     }
 
