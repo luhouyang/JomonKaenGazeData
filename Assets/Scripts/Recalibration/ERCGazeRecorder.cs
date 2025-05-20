@@ -35,6 +35,9 @@ public class ERCGazeRecorder : MonoBehaviour
     [SerializeField]
     private GameObject currentModel;
 
+    [SerializeField]
+    private GameObject button;
+
     private string sessionPath;
     private int numTargetAppeared;
     private double timeInterval;
@@ -76,6 +79,7 @@ public class ERCGazeRecorder : MonoBehaviour
                 currentTarget.SetActive(false);
                 SetIsRecording(false);
                 SaveAllData();
+                button.SetActive(true);
             } else
             {
                 timeInterval = Range(100, 151) / 100.0;
@@ -122,6 +126,8 @@ public class ERCGazeRecorder : MonoBehaviour
             currentIndex = Range(0, targetList.Count);
             currentTarget = targetList[currentIndex];
             currentTarget.SetActive(true);
+
+            button.SetActive(false);
         }
     }
 
@@ -148,7 +154,7 @@ public class ERCGazeRecorder : MonoBehaviour
             Vector3 pos = gaze.localHitPosition;
             if (localBounds.Contains(pos) && gaze.targetName == target.name && gaze.targetName != "null")
             {
-                pc_sb.AppendLine($"{pos.x:F3},{pos.y:F3},{pos.z:F3},{tarTrans.x:F3},{tarTrans.y:F3},{tarTrans.z:F3},{gaze.headPosition.x:F3},{gaze.headPosition.y:F3},{gaze.headPosition.z:F3},{(gaze.timestamp - startingTime):F3}");
+                pc_sb.AppendLine($"{pos.x:F3},{-pos.y:F3},{pos.z:F3},{tarTrans.x:F3},{-tarTrans.y:F3},{tarTrans.z:F3},{gaze.headPosition.x:F3},{-gaze.headPosition.y:F3},{gaze.headPosition.z:F3},{(gaze.timestamp - startingTime):F3}");
                 zSum += pos.z;
                 zNum += 1.0f;
             }
@@ -188,7 +194,7 @@ public class ERCGazeRecorder : MonoBehaviour
         {
             Vector3 pos = target.transform.localPosition;
             pos = new Vector3(pos.x, pos.y, pos.z + (zSum / zNum));
-            sb.AppendLine($"{pos.x:F3},{pos.y:F3},{pos.z:F3},{target.transform.localScale.x},{target.transform.localScale.y},{target.transform.localScale.z},{target.name}");
+            sb.AppendLine($"{pos.x:F3},{-pos.y:F3},{pos.z:F3},{target.transform.localScale.x},{target.transform.localScale.y},{target.transform.localScale.z},{target.name}");
         }
         File.WriteAllText(Path.Combine(saveDir, fileName), sb.ToString());
     }
