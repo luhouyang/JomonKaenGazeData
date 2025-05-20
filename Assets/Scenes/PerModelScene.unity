@@ -25715,8 +25715,8 @@ GameObject:
   - component: {fileID: 251654476205859324}
   - component: {fileID: 9090691699473044962}
   - component: {fileID: 9090691699473044961}
-  - component: {fileID: 9090691699473044960}
   - component: {fileID: 9090691699473044959}
+  - component: {fileID: 9090691699473044960}
   - component: {fileID: 9090691699473044963}
   m_Layer: 0
   m_Name: okinohara_001
