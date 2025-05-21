@@ -44,6 +44,8 @@ public class ExpModelController : MonoBehaviour
             }
         }
 
+        promptObject.SetActive(false);
+
         group = groups[0];
         models = group.GetComponent<GroupItems>().GetModels();
 
@@ -91,6 +93,8 @@ public class ExpModelController : MonoBehaviour
             recorder.sessionPath = sessionPath;
             recorder.ResetAll();
         }
+
+        promptObject.SetActive(false);
 
         currentModelIndex = 0;
         LoadModel();
@@ -143,14 +147,15 @@ public class ExpModelController : MonoBehaviour
     {
         if (currentModelIndex == 0)
         {
-            currentModelIndex = models.Count - 1;
+            //currentModelIndex = models.Count - 1;
+            currentModelIndex = 0;
+            StopRecording();
         }
         else
         {
             currentModelIndex--;
+            LoadModel();
         }
-
-        LoadModel();
 
         Debug.Log("Loading " + models[currentModelIndex].name);
     }
@@ -159,14 +164,15 @@ public class ExpModelController : MonoBehaviour
     {
         if (currentModelIndex == models.Count - 1)
         {
-            currentModelIndex = 0;
+            //currentModelIndex = 0;
+            promptObject.SetActive(true);
+            StopRecording();
         }
         else
         {
             currentModelIndex++;
+            LoadModel();
         }
-
-        LoadModel();
 
         Debug.Log("Loading " + models[currentModelIndex].name);
     }

@@ -369,6 +369,7 @@ public class ExpModelGazeRecorder : MonoBehaviour
             SetIsRecording(false);
         }
         currentSession = new ExpModelGazeRecorder.SessionData();
+        promptObject.GetComponent<TextMeshPro>().SetText("Say 'Start'");
         StopAllCoroutines(); // Ensure any ongoing audio recording coroutines are stopped
 
         // Optionally, you might want to reset audio recording state explicitly
