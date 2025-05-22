@@ -65,6 +65,7 @@ public class ExpModelController : MonoBehaviour
             for (int j = 0; j < m.Count(); j++)
             {
                 m[j].GetComponent<DrawOn3DTexture>().ToggleLiveHeatmap(false);
+                m[j].GetComponent<DrawOn3DTexture>().enabled = false;
             }
         }
     }
@@ -77,6 +78,7 @@ public class ExpModelController : MonoBehaviour
             for (int j = 0; j < m.Count(); j++)
             {
                 m[j].GetComponent<DrawOn3DTexture>().ToggleLiveHeatmap(true);
+                m[j].GetComponent<DrawOn3DTexture>().enabled = true;
             }
         }
     }
