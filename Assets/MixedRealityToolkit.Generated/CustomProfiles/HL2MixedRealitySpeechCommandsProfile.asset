@@ -79,17 +79,3 @@ MonoBehaviour:
       id: 0
       description: None
       axisConstraint: 0
-  - localizationKey: 
-    keyword: Hajime
-    keyCode: 0
-    action:
-      id: 0
-      description: None
-      axisConstraint: 0
-  - localizationKey: 
-    keyword: Tsugi
-    keyCode: 0
-    action:
-      id: 0
-      description: None
-      axisConstraint: 0
