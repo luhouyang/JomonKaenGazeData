@@ -10374,22 +10374,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-  - keyword: Hajime
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 1362956095}
-          m_TargetAssemblyTypeName: ExpModelController, Assembly-CSharp
-          m_MethodName: StartRecording
-          m_Mode: 1
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
   persistentKeywords: 0
   speechConfirmationTooltipPrefab: {fileID: 0}
 --- !u!114 &856720582
@@ -23008,22 +22992,6 @@ MonoBehaviour:
   isFocusRequired: 0
   keywords:
   - keyword: Next
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 1362956095}
-          m_TargetAssemblyTypeName: ExpModelController, Assembly-CSharp
-          m_MethodName: LoadNext
-          m_Mode: 1
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-  - keyword: Tsugi
     response:
       m_PersistentCalls:
         m_Calls:
