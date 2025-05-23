@@ -27,8 +27,8 @@ public class ExpModelController : MonoBehaviour
     private GameObject group;
 
     // recording state
-    private bool recorded = false;
     private bool admin = false;
+    public static bool recorded = false;
 
     void Start()
     {
@@ -105,9 +105,8 @@ public class ExpModelController : MonoBehaviour
 
     public void StartRecording() 
     {
-        if (!recorded)
+        if (!currentModel.GetComponent<ExpModelGazeRecorder>().isRecording && !recorded)
         {
-            recorded = true;
             currentModel.GetComponent<ExpModelGazeRecorder>().SetIsRecording(true);
             currentModel.GetComponent<EyeTrackingTarget>().enabled = true;
         }
@@ -117,7 +116,6 @@ public class ExpModelController : MonoBehaviour
     {
         if (currentModel.GetComponent<ExpModelGazeRecorder>().isRecording)
         {
-            recorded = false;
             currentModel.GetComponent<ExpModelGazeRecorder>().SetIsRecording(false);
             currentModel.GetComponent<ExpModelGazeRecorder>().SaveAllData();
             currentModel.GetComponent<EyeTrackingTarget>().enabled = false;
@@ -150,7 +148,7 @@ public class ExpModelController : MonoBehaviour
 
     public void LoadPrevious() 
     {
-        if (!recorded || admin)
+        if (!currentModel.GetComponent<ExpModelGazeRecorder>().isRecording || admin)
         {
             if (currentModelIndex == 0)
             {
@@ -170,7 +168,7 @@ public class ExpModelController : MonoBehaviour
 
     public void LoadNext() 
     {
-        if (!recorded || admin)
+        if ((!currentModel.GetComponent<ExpModelGazeRecorder>().isRecording && recorded) || admin)
         {
             if (currentModelIndex == models.Count - 1)
             {
@@ -201,5 +199,10 @@ public class ExpModelController : MonoBehaviour
     public void ToggleAdminMode()
     {
         admin = !admin;
+    }
+
+    public static void ToggleRecorded()
+    {
+        recorded = !recorded;
     }
 }

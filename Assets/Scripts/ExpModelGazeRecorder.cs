@@ -42,8 +42,8 @@ public class ExpModelGazeRecorder : MonoBehaviour
     [Header("Heatmap / Mesh Settings")]
     public MeshFilter meshFilter;
 
-    private float recordGazeDuration = 60.0f;
-    private float recordVoiceDuration = 60.0f;
+    private float recordGazeDuration = 2.0f;
+    private float recordVoiceDuration = 2.0f;
 
     [Header("Audio Recording Settings")]
     public int audioSampleRate = 44100;
@@ -127,6 +127,8 @@ public class ExpModelGazeRecorder : MonoBehaviour
             StopAudioRecording();
             SaveFileList();
             SetIsRecording(false);
+
+            ExpModelController.ToggleRecorded();
         }
 
         /* RESTART AUDIO RECORDING EVERY 60 SECONDS */
