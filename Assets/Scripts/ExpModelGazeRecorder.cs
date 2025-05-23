@@ -73,7 +73,7 @@ public class ExpModelGazeRecorder : MonoBehaviour
     private bool savedGaze;
 
     // prompt text
-    private string question = "Say most impressive parts of the object and your impression (feeling) in 20 seconds";
+    private string question = "Say most impressive parts of the object and your impression (feeling)";
 
     void Start()
     {
