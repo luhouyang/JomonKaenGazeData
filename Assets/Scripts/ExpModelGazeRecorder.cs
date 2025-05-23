@@ -42,8 +42,8 @@ public class ExpModelGazeRecorder : MonoBehaviour
     [Header("Heatmap / Mesh Settings")]
     public MeshFilter meshFilter;
 
-    private float recordGazeDuration = 2.0f;
-    private float recordVoiceDuration = 2.0f;
+    private float recordGazeDuration = 60.0f;
+    private float recordVoiceDuration = 60.0f;
 
     [Header("Audio Recording Settings")]
     public int audioSampleRate = 44100;
@@ -115,7 +115,7 @@ public class ExpModelGazeRecorder : MonoBehaviour
             if (!savedGaze)
             {
                 GetComponent<DrawOn3DTexture>().ToggleLiveHeatmap(false);
-                SaveAllData();
+                //SaveAllData(); // moved to end to prevent lag
                 savedGaze = true;
             }
         }
@@ -123,6 +123,8 @@ public class ExpModelGazeRecorder : MonoBehaviour
         else
         {
             promptObject.GetComponent<TextMeshPro>().SetText("Say 'Next'");
+
+            SaveAllData();
 
             StopAudioRecording();
             SaveFileList();

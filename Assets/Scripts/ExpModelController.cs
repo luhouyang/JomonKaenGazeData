@@ -45,6 +45,8 @@ public class ExpModelController : MonoBehaviour
             }
         }
 
+        DisableAllLiveHeatmap();
+
         promptObject.SetActive(false);
 
         group = groups[0];
