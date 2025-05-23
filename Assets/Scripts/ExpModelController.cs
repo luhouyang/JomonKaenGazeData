@@ -28,6 +28,7 @@ public class ExpModelController : MonoBehaviour
 
     // recording state
     private bool recorded = false;
+    private bool admin = false;
 
     void Start()
     {
@@ -116,6 +117,7 @@ public class ExpModelController : MonoBehaviour
     {
         if (currentModel.GetComponent<ExpModelGazeRecorder>().isRecording)
         {
+            recorded = false;
             currentModel.GetComponent<ExpModelGazeRecorder>().SetIsRecording(false);
             currentModel.GetComponent<ExpModelGazeRecorder>().SaveAllData();
             currentModel.GetComponent<EyeTrackingTarget>().enabled = false;
@@ -135,6 +137,7 @@ public class ExpModelController : MonoBehaviour
         // Select the next model
         currentModel = models[currentModelIndex];
         currentModel.SetActive(true);
+        currentModel.GetComponent<ExpModelGazeRecorder>().ResetAll();
 
         // Record the original transform
         previousModelPosition = currentModel.transform.parent.position;
@@ -147,36 +150,42 @@ public class ExpModelController : MonoBehaviour
 
     public void LoadPrevious() 
     {
-        if (currentModelIndex == 0)
+        if (!recorded || admin)
         {
-            //currentModelIndex = models.Count - 1;
-            currentModelIndex = 0;
-            StopRecording();
-        }
-        else
-        {
-            currentModelIndex--;
-            LoadModel();
-        }
+            if (currentModelIndex == 0)
+            {
+                //currentModelIndex = models.Count - 1;
+                currentModelIndex = 0;
+                StopRecording();
+            }
+            else
+            {
+                currentModelIndex--;
+                LoadModel();
+            }
 
-        Debug.Log("Loading " + models[currentModelIndex].name);
+            Debug.Log("Loading " + models[currentModelIndex].name);
+        }
     }
 
     public void LoadNext() 
     {
-        if (currentModelIndex == models.Count - 1)
+        if (!recorded || admin)
         {
-            //currentModelIndex = 0;
-            promptObject.SetActive(true);
-            StopRecording();
-        }
-        else
-        {
-            currentModelIndex++;
-            LoadModel();
-        }
+            if (currentModelIndex == models.Count - 1)
+            {
+                //currentModelIndex = 0;
+                promptObject.SetActive(true);
+                StopRecording();
+            }
+            else
+            {
+                currentModelIndex++;
+                LoadModel();
+            }
 
-        Debug.Log("Loading " + models[currentModelIndex].name);
+            Debug.Log("Loading " + models[currentModelIndex].name);
+        }
     }
 
     public List<GameObject> GetGroups()
@@ -187,5 +196,10 @@ public class ExpModelController : MonoBehaviour
     public void EyeRecalibrationTesting()
     {
         eyeRecalibrationObject.SetActive(!eyeRecalibrationObject.activeInHierarchy);
+    }
+
+    public void ToggleAdminMode()
+    {
+        admin = !admin;
     }
 }
