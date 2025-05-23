@@ -103,14 +103,14 @@ public class ExpModelGazeRecorder : MonoBehaviour
 
             RecordGazeData(gazedObject);
 
-            promptObject.GetComponent<TextMeshPro>().SetText($"\nVIEWING TIME: {(timer - recordVoiceDuration):F3}");
+            promptObject.GetComponent<TextMeshPro>().SetText($"\nVIEWING TIME: {(timer - recordVoiceDuration):F1}");
         }
         /* RECORD VOICE DATA */
         else if (timer > 0)
         {
             timer -= Time.deltaTime;
 
-            promptObject.GetComponent<TextMeshPro>().SetText(question + $"\nTIME: {timer:F3}");
+            promptObject.GetComponent<TextMeshPro>().SetText(question + $"\nTIME: {timer:F1}");
 
             if (!savedGaze)
             {
